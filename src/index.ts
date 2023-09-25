@@ -40,9 +40,9 @@ async function run(): Promise<void> {
         return;
       }
 
-      /*if (!comment?.body?.includes(commentPrefix)) {
+      if (!comment?.body?.replace(/\r?\n|\r/g, "").includes(commentPrefix)) {
         return;
-      }*/
+      }
 
       console.log(`Deleting comment id: ${comment.id})`); // eslint-disable-line no-console
       /*
