@@ -55,3 +55,20 @@ jobs:
             echo '### :boom: Please update the changelog accordingly (https://keepachangelog.com)' >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
+
+  test-action:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: cardinalby/git-get-release-action@v1
+        id: get_release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          latest: true
+
+      - name: Use the license check action on this
+        uses: ./

@@ -1,5 +1,5 @@
 import * as core from "@actions/core";
-import * as exec from "@actions/exec";ex
+import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 
 const commentPrefix = "[action-check-licenses]";
@@ -17,8 +17,8 @@ async function run(): Promise<void> {
     }
 
     const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
-    const continueOnError = core.getBooleanInput("continueOnError");
-    const ignoredPaths = core.getMultilineInput("ignoredPaths");
+    // const continueOnError = core.getBooleanInput("continueOnError");
+    // const ignoredPaths = core.getMultilineInput("ignoredPaths");
     const pullRequestNumber = context.payload.pull_request.number;
 
     const octokit = github.getOctokit(githubToken);
@@ -48,8 +48,49 @@ async function run(): Promise<void> {
       });
     }
 
-    await exec.exec("npm", ["install", "--save-dev", "license-compliance"]);
 
+    await exec.exec("npm", ["install", "--save-dev", "license-compliance"],
+    { silent: true });
+    const { stdout: licenseReport } = await exec.getExecOutput(
+      "yarn",
+      [
+        "license-compliance",
+        "--production",
+        "--format",
+        "json",
+        "--report",
+        "summary",
+      ],
+      { silent: true }
+    );
+
+    const writePullRequestComment = async (comment: string): Promise<void> => {
+      await octokit.rest.pulls.createReviewComment({
+        ...context.repo,
+        pull_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
+        body: `${commentPrefix}\n${comment}`,
+      }).catch((error: unknown) => {
+        throw new Error(`Unable to create review comment: ${error as string}`);
+      });
+    };
+
+
+    // take valid part of the report
+    const regex = /\[[\s\S]*\]/;
+    const match = licenseReport.match(regex);
+
+    // if we found something, process it
+    if (match) {
+      let prComment = "## NPM License Compliance Report\n\n";
+      const licenses = JSON.parse(match[0]);
+      licenses.forEach((license: { name: string; count: number }) => {
+        console.log(`License: ${license.name} (${license.count})`);
+        prComment += `- ${license.name} (${license.count})\n`;
+      });
+      await writePullRequestComment(prComment);
+    } else {
+      console.error("Unable to extract license report");
+    }
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error);
