@@ -13947,7 +13947,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const github = __importStar(__nccwpck_require__(5438));
-// const commentPrefix = "[action-check-licenses]";
+const commentPrefix = "[action-check-licenses]";
 /**
  * The main entry point
  */
@@ -13964,36 +13964,28 @@ function run() {
             // const ignoredPaths = core.getMultilineInput("ignoredPaths");
             const pullRequestNumber = context.payload.pull_request.number;
             const octokit = github.getOctokit(githubToken);
-            /*
-            const { data: reviewComments } = await octokit.rest.issues
-              .listComments({
-                ...context.repo,
-                pull_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
-              })
-              .catch((error: unknown) => {
-                throw new Error(`Unable to get review comments: ${error as string}`);
-              });
-        
+            const { data: comments } = yield octokit.rest.issues
+                .listComments(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber }))
+                .catch((error) => {
+                throw new Error(`Unable to get review comments: ${error}`);
+            });
             // Delete existing comments
-            for (const reviewComment of reviewComments) {
-              if (reviewComment.user.login !== "github-actions[bot]") {
-                return;
-              }
-        
-              if (!reviewComment.body.includes(commentPrefix)) {
-                return;
-              }
-        
-              await octokit.rest.pulls
-                .deleteReviewComment({
-                  ...context.repo,
-                  comment_id: reviewComment.id, // eslint-disable-line @typescript-eslint/naming-convention
-                })
-                .catch((error: unknown) => {
-                  throw new Error(`Unable to delete review comment: ${error as string}`);
+            for (const reviewComment of comments) {
+                if (!reviewComment.user || reviewComment.body === undefined) {
+                    return;
+                }
+                if (reviewComment.user.login !== "github-actions[bot]") {
+                    return;
+                }
+                if (!reviewComment.body.includes(commentPrefix)) {
+                    return;
+                }
+                yield octokit.rest.issues
+                    .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: reviewComment.id }))
+                    .catch((error) => {
+                    throw new Error(`Unable to delete review comment: ${error}`);
                 });
             }
-            */
             yield exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
                 silent: true,
             });
@@ -14022,6 +14014,7 @@ function run() {
                     console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
                     prComment += `- ${license.name} (${license.count})\n`;
                 });
+                prComment += `${prComment}\n\nCreated by ${commentPrefix}`;
                 yield writePullRequestComment(prComment);
             }
             else {

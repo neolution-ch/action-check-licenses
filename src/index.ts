@@ -2,7 +2,7 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 
-// const commentPrefix = "[action-check-licenses]";
+const commentPrefix = "[action-check-licenses]";
 
 /**
  * The main entry point
@@ -22,18 +22,21 @@ async function run(): Promise<void> {
     const pullRequestNumber = context.payload.pull_request.number;
 
     const octokit = github.getOctokit(githubToken);
-    /*
-    const { data: reviewComments } = await octokit.rest.issues
+    const { data: comments } = await octokit.rest.issues
       .listComments({
         ...context.repo,
-        pull_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
+        issue_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
       })
       .catch((error: unknown) => {
         throw new Error(`Unable to get review comments: ${error as string}`);
       });
 
     // Delete existing comments
-    for (const reviewComment of reviewComments) {
+    for (const reviewComment of comments) {
+      if (!reviewComment.user || reviewComment.body === undefined) {
+        return;
+      }
+
       if (reviewComment.user.login !== "github-actions[bot]") {
         return;
       }
@@ -42,8 +45,8 @@ async function run(): Promise<void> {
         return;
       }
 
-      await octokit.rest.pulls
-        .deleteReviewComment({
+      await octokit.rest.issues
+        .deleteComment({
           ...context.repo,
           comment_id: reviewComment.id, // eslint-disable-line @typescript-eslint/naming-convention
         })
@@ -51,7 +54,6 @@ async function run(): Promise<void> {
           throw new Error(`Unable to delete review comment: ${error as string}`);
         });
     }
-    */
 
     await exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
       silent: true,
@@ -95,6 +97,8 @@ async function run(): Promise<void> {
         console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
         prComment += `- ${license.name} (${license.count})\n`;
       });
+
+      prComment += `${prComment}\n\nCreated by ${commentPrefix}`;
       await writePullRequestComment(prComment);
     } else {
       console.error("Unable to extract license report"); // eslint-disable-line no-console
