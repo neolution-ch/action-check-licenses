@@ -13969,7 +13969,9 @@ function run() {
                 .catch((error) => {
                 throw new Error(`Unable to get review comments: ${error}`);
             });
-            console.log(`License: ${comments})`); // eslint-disable-line no-console
+            for (const reviewComment of comments) {
+                console.log(`reviewComment: ${reviewComment})`); // eslint-disable-line no-console
+            }
             /*
             // Delete existing comments
             for (const reviewComment of comments) {

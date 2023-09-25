@@ -32,7 +32,9 @@ async function run(): Promise<void> {
         throw new Error(`Unable to get review comments: ${error as string}`);
       });
 
-    console.log(`License: ${comments})`); // eslint-disable-line no-console
+      for (const reviewComment of comments) {
+        console.log(`reviewComment: ${reviewComment})`); // eslint-disable-line no-console
+      }
 
     /*
     // Delete existing comments
