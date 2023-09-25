@@ -72,3 +72,5 @@ jobs:
 
       - name: Use the license check action on this
         uses: ./
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
