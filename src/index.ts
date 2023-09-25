@@ -23,12 +23,14 @@ async function run(): Promise<void> {
 
     const octokit = github.getOctokit(githubToken);
 
-    const { data: reviewComments } = await octokit.rest.pulls.listReviewComments({
-      ...context.repo,
-      pull_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
-    }).catch((error: unknown) => {
-      throw new Error(`Unable to get review comments: ${error as string}`);
-    });
+    const { data: reviewComments } = await octokit.rest.pulls
+      .listReviewComments({
+        ...context.repo,
+        pull_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
+      })
+      .catch((error: unknown) => {
+        throw new Error(`Unable to get review comments: ${error as string}`);
+      });
 
     // Delete existing comments
     for (const reviewComment of reviewComments) {
@@ -40,17 +42,19 @@ async function run(): Promise<void> {
         return;
       }
 
-      await octokit.rest.pulls.deleteReviewComment({
-        ...context.repo,
-        comment_id: reviewComment.id, // eslint-disable-line @typescript-eslint/naming-convention
-      }).catch((error: unknown) => {
-        throw new Error(`Unable to delete review comment: ${error as string}`);
-      });
+      await octokit.rest.pulls
+        .deleteReviewComment({
+          ...context.repo,
+          comment_id: reviewComment.id, // eslint-disable-line @typescript-eslint/naming-convention
+        })
+        .catch((error: unknown) => {
+          throw new Error(`Unable to delete review comment: ${error as string}`);
+        });
     }
 
-
-    await exec.exec("npm", ["install", "--save-dev", "license-compliance"],
-    { silent: true });
+    await exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
+      silent: true,
+    });
     const { stdout: licenseReport } = await exec.getExecOutput(
       "yarn",
       [
@@ -61,35 +65,39 @@ async function run(): Promise<void> {
         "--report",
         "summary",
       ],
-      { silent: true }
+      { silent: true },
     );
 
     const writePullRequestComment = async (comment: string): Promise<void> => {
-      await octokit.rest.pulls.createReviewComment({
-        ...context.repo,
-        pull_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
-        body: `${commentPrefix}\n${comment}`,
-      }).catch((error: unknown) => {
-        throw new Error(`Unable to create review comment: ${error as string}`);
-      });
+      await octokit.rest.pulls
+        .createReviewComment({
+          ...context.repo,
+          pull_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
+          body: `${commentPrefix}\n${comment}`,
+        })
+        .catch((error: unknown) => {
+          throw new Error(`Unable to create review comment: ${error as string}`);
+        });
     };
-
 
     // take valid part of the report
     const regex = /\[[\s\S]*\]/;
-    const match = licenseReport.match(regex);
+    const match = regex.exec(licenseReport);
 
     // if we found something, process it
     if (match) {
       let prComment = "## NPM License Compliance Report\n\n";
-      const licenses = JSON.parse(match[0]);
+      const licenses = JSON.parse(match[0]) as {
+        name: string;
+        count: number;
+      }[];
       licenses.forEach((license: { name: string; count: number }) => {
-        console.log(`License: ${license.name} (${license.count})`);
+        console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
         prComment += `- ${license.name} (${license.count})\n`;
       });
       await writePullRequestComment(prComment);
     } else {
-      console.error("Unable to extract license report");
+      console.error("Unable to extract license report"); // eslint-disable-line no-console
     }
   } catch (error) {
     if (error instanceof Error) {
