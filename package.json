@@ -1,0 +1,36 @@
+{
+  "name": "@neolution-ch/action-check-licenses",
+  "version": "1.4.0",
+  "description": "This action checks the repo for the npm and nuget licenses and adds a comment to the pull request",
+  "homepage": "https://github.com/neolution-ch/action-check-licenses",
+  "license": "MIT",
+  "author": "Neolution",
+  "main": "dist/index.js",
+  "source": "src/index.ts",
+  "scripts": {
+    "build": "ncc build src/index.ts --license licenses.txt -o dist && shx sed -i \"s/\\x0D$//g\" ./dist/index.js",
+    "prelint": "git ls-files | xargs eclint check",
+    "lint": "eslint \"**/*.{ts,tsx}\" --cache --max-warnings 0",
+    "upgradeAll": "npm-check-updates --packageFile ./package.json -u"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neolution-ch/action-check-licenses"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.0",
+    "@actions/exec": "^1.1.1",
+    "@actions/github": "^5.1.1",
+    "minimatch": "^7.4.2"
+  },
+  "devDependencies": {
+    "@neolution-ch/eslint-config-neolution": "^1.0.0",
+    "@types/node": "^18.8.3",
+    "@vercel/ncc": "^0.34.0",
+    "eclint": "^2.8.1",
+    "eslint": "^8.25.0",
+    "npm-check-updates": "^16.3.11",
+    "shx": "^0.3.4",
+    "typescript": "^4.8.4"
+  }
+}
