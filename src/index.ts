@@ -23,7 +23,6 @@ async function run(): Promise<void> {
 
     const octokit = github.getOctokit(githubToken);
 
-    /*
     const { data: comments } = await octokit.rest.issues
       .listComments({
         ...context.repo,
@@ -33,6 +32,9 @@ async function run(): Promise<void> {
         throw new Error(`Unable to get review comments: ${error as string}`);
       });
 
+    console.log(`License: ${comments})`); // eslint-disable-line no-console
+
+    /*
     // Delete existing comments
     for (const reviewComment of comments) {
       if (!reviewComment.user || reviewComment.body === undefined) {
