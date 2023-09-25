@@ -35,7 +35,7 @@ async function run(): Promise<void> {
     // Delete existing comments
     for (const comment of comments) {
       console.log(`login: ${comment?.user?.login})`); // eslint-disable-line no-console
-      console.log(`body: ${comment?.body})`); // eslint-disable-line no-console
+      console.log(`body: ${comment?.body?.replace(/\r?\n|\r/g, "")})`); // eslint-disable-line no-console
       if (comment?.user?.login !== "github-actions[bot]") {
         return;
       }
