@@ -13952,7 +13952,7 @@ const commentPrefix = "[action-check-licenses]";
  * The main entry point
  */
 function run() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { context } = github;
@@ -13977,9 +13977,9 @@ function run() {
                 if (((_c = comment === null || comment === void 0 ? void 0 : comment.user) === null || _c === void 0 ? void 0 : _c.login) !== "github-actions[bot]") {
                     return;
                 }
-                if (!((_d = comment === null || comment === void 0 ? void 0 : comment.body) === null || _d === void 0 ? void 0 : _d.includes(commentPrefix))) {
-                    return;
-                }
+                /*if (!comment?.body?.includes(commentPrefix)) {
+                  return;
+                }*/
                 console.log(`Deleting comment id: ${comment.id})`); // eslint-disable-line no-console
                 /*
                 await octokit.rest.issues
