@@ -13952,7 +13952,7 @@ const commentPrefix = "[action-check-licenses]";
  * The main entry point
  */
 function run() {
-    var _a, _b;
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { context } = github;
@@ -13971,14 +13971,16 @@ function run() {
                 throw new Error(`Unable to get review comments: ${error}`);
             });
             // Delete existing comments
-            for (const reviewComment of comments) {
-                if (((_a = reviewComment === null || reviewComment === void 0 ? void 0 : reviewComment.user) === null || _a === void 0 ? void 0 : _a.login) !== "github-actions[bot]") {
+            for (const comment of comments) {
+                console.log(`login: ${(_a = comment === null || comment === void 0 ? void 0 : comment.user) === null || _a === void 0 ? void 0 : _a.login})`); // eslint-disable-line no-console
+                console.log(`body: ${comment === null || comment === void 0 ? void 0 : comment.body})`); // eslint-disable-line no-console
+                if (((_b = comment === null || comment === void 0 ? void 0 : comment.user) === null || _b === void 0 ? void 0 : _b.login) !== "github-actions[bot]") {
                     return;
                 }
-                if (!((_b = reviewComment === null || reviewComment === void 0 ? void 0 : reviewComment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix))) {
+                if (!((_c = comment === null || comment === void 0 ? void 0 : comment.body) === null || _c === void 0 ? void 0 : _c.includes(commentPrefix))) {
                     return;
                 }
-                console.log(`Deleting comment id: ${reviewComment.id})`); // eslint-disable-line no-console
+                console.log(`Deleting comment id: ${comment.id})`); // eslint-disable-line no-console
                 /*
                 await octokit.rest.issues
                   .deleteComment({
