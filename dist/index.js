@@ -13979,11 +13979,16 @@ function run() {
                     return;
                 }
                 console.log(`Deleting comment id: ${reviewComment.id})`); // eslint-disable-line no-console
-                yield octokit.rest.issues
-                    .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: reviewComment.id }))
-                    .catch((error) => {
-                    throw new Error(`Unable to delete review comment: ${error}`);
-                });
+                /*
+                await octokit.rest.issues
+                  .deleteComment({
+                    ...context.repo,
+                    comment_id: reviewComment.id, // eslint-disable-line @typescript-eslint/naming-convention
+                  })
+                  .catch((error: unknown) => {
+                    throw new Error(`Unable to delete review comment: ${error as string}`);
+                  });
+                  */
             }
             yield exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
                 silent: true,

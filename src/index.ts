@@ -44,6 +44,7 @@ async function run(): Promise<void> {
       }
 
       console.log(`Deleting comment id: ${reviewComment.id})`); // eslint-disable-line no-console
+      /*
       await octokit.rest.issues
         .deleteComment({
           ...context.repo,
@@ -52,6 +53,7 @@ async function run(): Promise<void> {
         .catch((error: unknown) => {
           throw new Error(`Unable to delete review comment: ${error as string}`);
         });
+        */
     }
 
     await exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
