@@ -13952,6 +13952,7 @@ const commentPrefix = "[action-check-licenses]";
  * The main entry point
  */
 function run() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { context } = github;
@@ -13970,7 +13971,7 @@ function run() {
                 throw new Error(`Unable to get review comments: ${error}`);
             });
             for (const reviewComment of comments) {
-                console.log(`reviewComment: ${reviewComment})`); // eslint-disable-line no-console
+                console.log(`reviewComment: ${(_a = reviewComment === null || reviewComment === void 0 ? void 0 : reviewComment.user) === null || _a === void 0 ? void 0 : _a.login})`); // eslint-disable-line no-console
             }
             /*
             // Delete existing comments

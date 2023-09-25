@@ -33,7 +33,7 @@ async function run(): Promise<void> {
       });
 
       for (const reviewComment of comments) {
-        console.log(`reviewComment: ${reviewComment})`); // eslint-disable-line no-console
+        console.log(`reviewComment: ${reviewComment?.user?.login})`); // eslint-disable-line no-console
       }
 
     /*
