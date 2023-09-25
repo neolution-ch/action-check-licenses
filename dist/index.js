@@ -558,7 +558,7 @@ class OidcClient {
                 .catch(error => {
                 throw new Error(`Failed to get ID Token. \n 
         Error Code : ${error.statusCode}\n 
-        Error Message: ${error.result.message}`);
+        Error Message: ${error.message}`);
             });
             const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
             if (!id_token) {
@@ -13964,7 +13964,9 @@ function run() {
             // const ignoredPaths = core.getMultilineInput("ignoredPaths");
             const pullRequestNumber = context.payload.pull_request.number;
             const octokit = github.getOctokit(githubToken);
-            const { data: reviewComments } = yield octokit.rest.pulls.listReviewComments(Object.assign(Object.assign({}, context.repo), { pull_number: pullRequestNumber })).catch((error) => {
+            const { data: reviewComments } = yield octokit.rest.pulls
+                .listReviewComments(Object.assign(Object.assign({}, context.repo), { pull_number: pullRequestNumber }))
+                .catch((error) => {
                 throw new Error(`Unable to get review comments: ${error}`);
             });
             // Delete existing comments
@@ -13975,11 +13977,15 @@ function run() {
                 if (!reviewComment.body.includes(commentPrefix)) {
                     return;
                 }
-                yield octokit.rest.pulls.deleteReviewComment(Object.assign(Object.assign({}, context.repo), { comment_id: reviewComment.id })).catch((error) => {
+                yield octokit.rest.pulls
+                    .deleteReviewComment(Object.assign(Object.assign({}, context.repo), { comment_id: reviewComment.id }))
+                    .catch((error) => {
                     throw new Error(`Unable to delete review comment: ${error}`);
                 });
             }
-            yield exec.exec("npm", ["install", "--save-dev", "license-compliance"], { silent: true });
+            yield exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
+                silent: true,
+            });
             const { stdout: licenseReport } = yield exec.getExecOutput("yarn", [
                 "license-compliance",
                 "--production",
@@ -13989,25 +13995,27 @@ function run() {
                 "summary",
             ], { silent: true });
             const writePullRequestComment = (comment) => __awaiter(this, void 0, void 0, function* () {
-                yield octokit.rest.pulls.createReviewComment(Object.assign(Object.assign({}, context.repo), { pull_number: pullRequestNumber, body: `${commentPrefix}\n${comment}` })).catch((error) => {
+                yield octokit.rest.pulls
+                    .createReviewComment(Object.assign(Object.assign({}, context.repo), { pull_number: pullRequestNumber, body: `${commentPrefix}\n${comment}` }))
+                    .catch((error) => {
                     throw new Error(`Unable to create review comment: ${error}`);
                 });
             });
             // take valid part of the report
             const regex = /\[[\s\S]*\]/;
-            const match = licenseReport.match(regex);
+            const match = regex.exec(licenseReport);
             // if we found something, process it
             if (match) {
                 let prComment = "## NPM License Compliance Report\n\n";
                 const licenses = JSON.parse(match[0]);
                 licenses.forEach((license) => {
-                    console.log(`License: ${license.name} (${license.count})`);
+                    console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
                     prComment += `- ${license.name} (${license.count})\n`;
                 });
                 yield writePullRequestComment(prComment);
             }
             else {
-                console.error("Unable to extract license report");
+                console.error("Unable to extract license report"); // eslint-disable-line no-console
             }
         }
         catch (error) {
