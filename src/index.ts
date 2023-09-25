@@ -43,17 +43,16 @@ async function run(): Promise<void> {
       }
 
       if (comment?.body?.includes(commentPrefix)) {
-        console.log(`Deleting comment id: ${comment.id})`); // eslint-disable-line no-console
-        /*
+        console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
+
         await octokit.rest.issues
           .deleteComment({
             ...context.repo,
-            comment_id: reviewComment.id, // eslint-disable-line @typescript-eslint/naming-convention
+            comment_id: comment.id, // eslint-disable-line @typescript-eslint/naming-convention
           })
           .catch((error: unknown) => {
             throw new Error(`Unable to delete review comment: ${error as string}`);
           });
-          */
       }
     }
 
