@@ -13962,6 +13962,7 @@ function run() {
             }
             const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
             const blockedLicenses = core.getMultilineInput("blockedLicenses");
+            const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
             const pullRequestNumber = context.payload.pull_request.number;
             const octokit = github.getOctokit(githubToken);
             const { data: comments } = yield octokit.rest.issues
@@ -14020,6 +14021,9 @@ function run() {
                 }
                 prComment += `\n\nCreated by ${commentPrefix}\n`;
                 yield writePullRequestComment(prComment);
+                if (!continueOnBlockedFound && blockedLicenseNames) {
+                    throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
+                }
             }
             else {
                 console.error("Unable to extract license report"); // eslint-disable-line no-console

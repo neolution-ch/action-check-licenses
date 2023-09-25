@@ -74,6 +74,7 @@ jobs:
         uses: ./
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          continueOnBlockedFound: false
           blockedLicenses: |
             GPL
             GPL-2.0

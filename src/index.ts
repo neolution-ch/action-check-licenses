@@ -18,6 +18,7 @@ async function run(): Promise<void> {
 
     const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
     const blockedLicenses = core.getMultilineInput("blockedLicenses");
+    const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
     const pullRequestNumber = context.payload.pull_request.number;
 
     const octokit = github.getOctokit(githubToken);
@@ -105,6 +106,10 @@ async function run(): Promise<void> {
 
       prComment += `\n\nCreated by ${commentPrefix}\n`;
       await writePullRequestComment(prComment);
+
+      if (!continueOnBlockedFound && blockedLicenseNames) {
+        throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
+      }
     } else {
       console.error("Unable to extract license report"); // eslint-disable-line no-console
     }
