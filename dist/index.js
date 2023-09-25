@@ -13952,7 +13952,7 @@ const commentPrefix = "[action-check-licenses]";
  * The main entry point
  */
 function run() {
-    var _a, _b, _c;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { context } = github;
@@ -13972,14 +13972,10 @@ function run() {
             });
             // Delete existing comments
             for (const comment of comments) {
-                console.log(`login: ${(_a = comment === null || comment === void 0 ? void 0 : comment.user) === null || _a === void 0 ? void 0 : _a.login})`); // eslint-disable-line no-console
-                console.log("--body start"); // eslint-disable-line no-console
-                console.log(comment.body); // eslint-disable-line no-console
-                console.log("--body end"); // eslint-disable-line no-console
-                if (((_b = comment === null || comment === void 0 ? void 0 : comment.user) === null || _b === void 0 ? void 0 : _b.login) !== "github-actions[bot]") {
+                if (((_a = comment.user) === null || _a === void 0 ? void 0 : _a.login) !== "github-actions[bot]") {
                     return;
                 }
-                if ((_c = comment === null || comment === void 0 ? void 0 : comment.body) === null || _c === void 0 ? void 0 : _c.includes(commentPrefix)) {
+                if ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) { // eslint-disable-line @typescript-eslint/strict-boolean-expressions
                     console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
                     yield octokit.rest.issues
                         .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: comment.id }))

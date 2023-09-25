@@ -34,15 +34,11 @@ async function run(): Promise<void> {
 
     // Delete existing comments
     for (const comment of comments) {
-      console.log(`login: ${comment?.user?.login})`); // eslint-disable-line no-console
-      console.log("--body start"); // eslint-disable-line no-console
-      console.log(comment.body); // eslint-disable-line no-console
-      console.log("--body end"); // eslint-disable-line no-console
-      if (comment?.user?.login !== "github-actions[bot]") {
+      if (comment.user?.login !== "github-actions[bot]") {
         return;
       }
 
-      if (comment?.body?.includes(commentPrefix)) {
+      if (comment.body?.includes(commentPrefix)) { // eslint-disable-line @typescript-eslint/strict-boolean-expressions
         console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
 
         await octokit.rest.issues
