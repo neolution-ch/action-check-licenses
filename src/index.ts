@@ -2,7 +2,7 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 
-const commentPrefix = "[action-check-licenses]";
+// const commentPrefix = "[action-check-licenses]";
 
 /**
  * The main entry point
@@ -22,9 +22,9 @@ async function run(): Promise<void> {
     const pullRequestNumber = context.payload.pull_request.number;
 
     const octokit = github.getOctokit(githubToken);
-
-    const { data: reviewComments } = await octokit.rest.pulls
-      .listReviewComments({
+    /*
+    const { data: reviewComments } = await octokit.rest.issues
+      .listComments({
         ...context.repo,
         pull_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
       })
@@ -51,6 +51,7 @@ async function run(): Promise<void> {
           throw new Error(`Unable to delete review comment: ${error as string}`);
         });
     }
+    */
 
     await exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
       silent: true,
@@ -69,12 +70,11 @@ async function run(): Promise<void> {
     );
 
     const writePullRequestComment = async (comment: string): Promise<void> => {
-      await octokit.rest.pulls
-        .createReviewComment({
-          ...context.repo,
-          pull_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
-          body: `${commentPrefix}\n${comment}`,
-        })
+      await octokit.rest.issues.createComment({
+        ...context.repo,
+        issue_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
+        body: comment,
+      })
         .catch((error: unknown) => {
           throw new Error(`Unable to create review comment: ${error as string}`);
         });
