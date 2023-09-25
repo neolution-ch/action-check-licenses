@@ -22,6 +22,8 @@ async function run(): Promise<void> {
     const pullRequestNumber = context.payload.pull_request.number;
 
     const octokit = github.getOctokit(githubToken);
+
+    /*
     const { data: comments } = await octokit.rest.issues
       .listComments({
         ...context.repo,
@@ -54,6 +56,7 @@ async function run(): Promise<void> {
           throw new Error(`Unable to delete review comment: ${error as string}`);
         });
     }
+    */
 
     await exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
       silent: true,

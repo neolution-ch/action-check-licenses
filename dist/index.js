@@ -13964,28 +13964,40 @@ function run() {
             // const ignoredPaths = core.getMultilineInput("ignoredPaths");
             const pullRequestNumber = context.payload.pull_request.number;
             const octokit = github.getOctokit(githubToken);
-            const { data: comments } = yield octokit.rest.issues
-                .listComments(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber }))
-                .catch((error) => {
-                throw new Error(`Unable to get review comments: ${error}`);
-            });
+            /*
+            const { data: comments } = await octokit.rest.issues
+              .listComments({
+                ...context.repo,
+                issue_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
+              })
+              .catch((error: unknown) => {
+                throw new Error(`Unable to get review comments: ${error as string}`);
+              });
+        
             // Delete existing comments
             for (const reviewComment of comments) {
-                if (!reviewComment.user || reviewComment.body === undefined) {
-                    return;
-                }
-                if (reviewComment.user.login !== "github-actions[bot]") {
-                    return;
-                }
-                if (!reviewComment.body.includes(commentPrefix)) {
-                    return;
-                }
-                yield octokit.rest.issues
-                    .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: reviewComment.id }))
-                    .catch((error) => {
-                    throw new Error(`Unable to delete review comment: ${error}`);
+              if (!reviewComment.user || reviewComment.body === undefined) {
+                return;
+              }
+        
+              if (reviewComment.user.login !== "github-actions[bot]") {
+                return;
+              }
+        
+              if (!reviewComment.body.includes(commentPrefix)) {
+                return;
+              }
+        
+              await octokit.rest.issues
+                .deleteComment({
+                  ...context.repo,
+                  comment_id: reviewComment.id, // eslint-disable-line @typescript-eslint/naming-convention
+                })
+                .catch((error: unknown) => {
+                  throw new Error(`Unable to delete review comment: ${error as string}`);
                 });
             }
+            */
             yield exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
                 silent: true,
             });
