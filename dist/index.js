@@ -14014,7 +14014,7 @@ function run() {
                     console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
                     prComment += `- ${license.name} (${license.count})\n`;
                 });
-                prComment += `${prComment}\n\nCreated by ${commentPrefix}`;
+                prComment += `\n\nCreated by ${commentPrefix}\n`;
                 yield writePullRequestComment(prComment);
             }
             else {

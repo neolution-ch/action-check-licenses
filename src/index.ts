@@ -88,7 +88,7 @@ async function run(): Promise<void> {
 
     // if we found something, process it
     if (match) {
-      let prComment = "## NPM License Compliance Report\n\n";
+      let prComment = "## NPM License Report\n\n";
       const licenses = JSON.parse(match[0]) as {
         name: string;
         count: number;
@@ -98,7 +98,7 @@ async function run(): Promise<void> {
         prComment += `- ${license.name} (${license.count})\n`;
       });
 
-      prComment += `${prComment}\n\nCreated by ${commentPrefix}`;
+      prComment += `\n\nCreated by ${commentPrefix}\n`;
       await writePullRequestComment(prComment);
     } else {
       console.error("Unable to extract license report"); // eslint-disable-line no-console
