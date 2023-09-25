@@ -1,19 +1,19 @@
-name: 'Check suppressions'
+name: 'Check licenses'
 author: 'Neolution'
 branding:
   icon: 'check-circle'
   color: 'orange'
-description: 'This action check for code analyzer suppressions and add a comment to the pull request'
+description: 'This action check for the licenses of the repo and add a comment to the pr'
 inputs:
   GITHUB_TOKEN:
     description: 'Github token of the repository (automatically created by Github)'
     required: true
-  continueOnError:
-    description: 'Whether to continue even if there are errors'
+  continueOnBlockedFound:
+    description: 'Whether to continue even if blocked licenses are found'
     required: false
     default: 'false'
-  ignoredPaths:
-    description: 'The list of paths to ignore'
+  blockedLicenses:
+    description: 'The list of disallowed licenses'
     required: false
     default: ''
 runs:
