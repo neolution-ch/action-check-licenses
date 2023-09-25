@@ -35,26 +35,26 @@ async function run(): Promise<void> {
     // Delete existing comments
     for (const comment of comments) {
       console.log(`login: ${comment?.user?.login})`); // eslint-disable-line no-console
-      console.log(`body: ${comment?.body?.replace(/\r?\n|\r/g, "")})`); // eslint-disable-line no-console
+      console.log("--body start"); // eslint-disable-line no-console
+      console.log(comment.body); // eslint-disable-line no-console
+      console.log("--body end"); // eslint-disable-line no-console
       if (comment?.user?.login !== "github-actions[bot]") {
         return;
       }
 
-      if (!comment?.body?.replace(/\r?\n|\r/g, "").includes(commentPrefix)) {
-        return;
+      if (comment?.body?.includes(commentPrefix)) {
+        console.log(`Deleting comment id: ${comment.id})`); // eslint-disable-line no-console
+        /*
+        await octokit.rest.issues
+          .deleteComment({
+            ...context.repo,
+            comment_id: reviewComment.id, // eslint-disable-line @typescript-eslint/naming-convention
+          })
+          .catch((error: unknown) => {
+            throw new Error(`Unable to delete review comment: ${error as string}`);
+          });
+          */
       }
-
-      console.log(`Deleting comment id: ${comment.id})`); // eslint-disable-line no-console
-      /*
-      await octokit.rest.issues
-        .deleteComment({
-          ...context.repo,
-          comment_id: reviewComment.id, // eslint-disable-line @typescript-eslint/naming-convention
-        })
-        .catch((error: unknown) => {
-          throw new Error(`Unable to delete review comment: ${error as string}`);
-        });
-        */
     }
 
     await exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
