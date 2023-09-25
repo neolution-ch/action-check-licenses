@@ -14008,7 +14008,7 @@ function run() {
             const match = regex.exec(licenseReport);
             // if we found something, process it
             if (match) {
-                let prComment = "## NPM License Compliance Report\n\n";
+                let prComment = "## NPM License Report\n\n";
                 const licenses = JSON.parse(match[0]);
                 licenses.forEach((license) => {
                     console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
