@@ -32,25 +32,18 @@ async function run(): Promise<void> {
         throw new Error(`Unable to get review comments: ${error as string}`);
       });
 
-      for (const reviewComment of comments) {
-        console.log(`reviewComment: ${reviewComment?.user?.login})`); // eslint-disable-line no-console
-      }
-
-    /*
     // Delete existing comments
     for (const reviewComment of comments) {
-      if (!reviewComment.user || reviewComment.body === undefined) {
+
+      if (reviewComment?.user?.login !== "github-actions[bot]") {
         return;
       }
 
-      if (reviewComment.user.login !== "github-actions[bot]") {
+      if (!reviewComment?.body?.includes(commentPrefix)) {
         return;
       }
 
-      if (!reviewComment.body.includes(commentPrefix)) {
-        return;
-      }
-
+      console.log(`Deleting comment id: ${reviewComment.id})`); // eslint-disable-line no-console
       await octokit.rest.issues
         .deleteComment({
           ...context.repo,
@@ -60,7 +53,6 @@ async function run(): Promise<void> {
           throw new Error(`Unable to delete review comment: ${error as string}`);
         });
     }
-    */
 
     await exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
       silent: true,

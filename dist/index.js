@@ -13952,7 +13952,7 @@ const commentPrefix = "[action-check-licenses]";
  * The main entry point
  */
 function run() {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { context } = github;
@@ -13970,34 +13970,21 @@ function run() {
                 .catch((error) => {
                 throw new Error(`Unable to get review comments: ${error}`);
             });
-            for (const reviewComment of comments) {
-                console.log(`reviewComment: ${(_a = reviewComment === null || reviewComment === void 0 ? void 0 : reviewComment.user) === null || _a === void 0 ? void 0 : _a.login})`); // eslint-disable-line no-console
-            }
-            /*
             // Delete existing comments
             for (const reviewComment of comments) {
-              if (!reviewComment.user || reviewComment.body === undefined) {
-                return;
-              }
-        
-              if (reviewComment.user.login !== "github-actions[bot]") {
-                return;
-              }
-        
-              if (!reviewComment.body.includes(commentPrefix)) {
-                return;
-              }
-        
-              await octokit.rest.issues
-                .deleteComment({
-                  ...context.repo,
-                  comment_id: reviewComment.id, // eslint-disable-line @typescript-eslint/naming-convention
-                })
-                .catch((error: unknown) => {
-                  throw new Error(`Unable to delete review comment: ${error as string}`);
+                if (((_a = reviewComment === null || reviewComment === void 0 ? void 0 : reviewComment.user) === null || _a === void 0 ? void 0 : _a.login) !== "github-actions[bot]") {
+                    return;
+                }
+                if (!((_b = reviewComment === null || reviewComment === void 0 ? void 0 : reviewComment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix))) {
+                    return;
+                }
+                console.log(`Deleting comment id: ${reviewComment.id})`); // eslint-disable-line no-console
+                yield octokit.rest.issues
+                    .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: reviewComment.id }))
+                    .catch((error) => {
+                    throw new Error(`Unable to delete review comment: ${error}`);
                 });
             }
-            */
             yield exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
                 silent: true,
             });
