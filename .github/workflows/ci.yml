@@ -74,3 +74,8 @@ jobs:
         uses: ./
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          blockedLicenses: |
+            GPL
+            GPL-2.0
+            MIT
+

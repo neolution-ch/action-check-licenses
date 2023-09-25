@@ -13961,8 +13961,7 @@ function run() {
                 return;
             }
             const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
-            // const continueOnError = core.getBooleanInput("continueOnError");
-            // const ignoredPaths = core.getMultilineInput("ignoredPaths");
+            const blockedLicenses = core.getMultilineInput("blockedLicenses");
             const pullRequestNumber = context.payload.pull_request.number;
             const octokit = github.getOctokit(githubToken);
             const { data: comments } = yield octokit.rest.issues
@@ -14012,6 +14011,13 @@ function run() {
                     console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
                     prComment += `- ${license.name} (${license.count})\n`;
                 });
+                const blockedLicenseNames = licenses
+                    .filter((license) => blockedLicenses.includes(license.name))
+                    .map((license) => license.name)
+                    .join(", ");
+                if (blockedLicenseNames) {
+                    prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
+                }
                 prComment += `\n\nCreated by ${commentPrefix}\n`;
                 yield writePullRequestComment(prComment);
             }
