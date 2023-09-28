@@ -8,13 +8,13 @@ See [action.yml](action.yml)
 
 ```yaml
 steps:
-- uses: neolution-ch/action-check-licenses@v1
-  with:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    continueOnBlockedFound: true
-    blockedLicenses: |
-      GPL
-      GPL-2.0
+  - uses: neolution-ch/action-check-licenses@v1
+    with:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continueOnBlockedFound: true
+      blockedLicenses: |
+        GPL
+        GPL-2.0
 ```
 
 # License
