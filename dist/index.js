@@ -14001,33 +14001,36 @@ function run() {
                     throw new Error(`Unable to create review comment: ${error}`);
                 });
             });
-            // take valid part of the report
-            const regex = /\[[\s\S]*\]/;
-            const match = regex.exec(licenseReport);
-            // if we found something, process it
-            if (match) {
-                let prComment = "## NPM License Report\n\n";
-                const licenses = JSON.parse(match[0]);
-                licenses.forEach((license) => {
-                    console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
-                    prComment += `- ${license.name} (${license.count})\n`;
-                });
-                const blockedLicenseNames = licenses
-                    .filter((license) => blockedLicenses.includes(license.name))
-                    .map((license) => license.name)
-                    .join(", ");
-                if (blockedLicenseNames) {
-                    prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
+            const processNpm = () => __awaiter(this, void 0, void 0, function* () {
+                // take valid part of the report
+                const regex = /\[[\s\S]*\]/;
+                const match = regex.exec(licenseReport);
+                // if we found something, process it
+                if (match) {
+                    let prComment = "## NPM License Report\n\n";
+                    const licenses = JSON.parse(match[0]);
+                    licenses.forEach((license) => {
+                        console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
+                        prComment += `- ${license.name} (${license.count})\n`;
+                    });
+                    const blockedLicenseNames = licenses
+                        .filter((license) => blockedLicenses.includes(license.name))
+                        .map((license) => license.name)
+                        .join(", ");
+                    if (blockedLicenseNames) {
+                        prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
+                    }
+                    prComment += `\n\nCreated by ${commentPrefix}\n`;
+                    yield writePullRequestComment(prComment);
+                    if (!continueOnBlockedFound && blockedLicenseNames) {
+                        throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
+                    }
                 }
-                prComment += `\n\nCreated by ${commentPrefix}\n`;
-                yield writePullRequestComment(prComment);
-                if (!continueOnBlockedFound && blockedLicenseNames) {
-                    throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
+                else {
+                    console.error("Unable to extract license report"); // eslint-disable-line no-console
                 }
-            }
-            else {
-                console.error("Unable to extract license report"); // eslint-disable-line no-console
-            }
+            });
+            yield processNpm();
         }
         catch (error) {
             if (error instanceof Error) {
