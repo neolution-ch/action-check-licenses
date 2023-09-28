@@ -11,7 +11,10 @@ steps:
 - uses: neolution-ch/action-check-licenses@v1
   with:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    continueOnError: false # default
+    continueOnBlockedFound: true
+    blockedLicenses: |
+      GPL
+      GPL-2.0
 ```
 
 # License
