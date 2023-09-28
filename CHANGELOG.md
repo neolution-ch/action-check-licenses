@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### dependabot: \#11 Bump actions/checkout from 3 to 4
+
 ### Added
 
 - Initial release with NPM support (nuget coming soon).
