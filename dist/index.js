@@ -13975,7 +13975,8 @@ function run() {
                 if (((_a = comment.user) === null || _a === void 0 ? void 0 : _a.login) !== "github-actions[bot]") {
                     return;
                 }
-                if ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) { // eslint-disable-line @typescript-eslint/strict-boolean-expressions
+                // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+                if ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) {
                     console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
                     yield octokit.rest.issues
                         .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: comment.id }))
@@ -13987,16 +13988,10 @@ function run() {
             yield exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
                 silent: true,
             });
-            const { stdout: licenseReport } = yield exec.getExecOutput("yarn", [
-                "license-compliance",
-                "--production",
-                "--format",
-                "json",
-                "--report",
-                "summary",
-            ], { silent: true });
+            const { stdout: licenseReport } = yield exec.getExecOutput("yarn", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: true });
             const writePullRequestComment = (comment) => __awaiter(this, void 0, void 0, function* () {
-                yield octokit.rest.issues.createComment(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber, body: comment }))
+                yield octokit.rest.issues
+                    .createComment(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber, body: comment }))
                     .catch((error) => {
                     throw new Error(`Unable to create review comment: ${error}`);
                 });
