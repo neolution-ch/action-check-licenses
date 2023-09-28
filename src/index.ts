@@ -38,7 +38,8 @@ async function run(): Promise<void> {
         return;
       }
 
-      if (comment.body?.includes(commentPrefix)) { // eslint-disable-line @typescript-eslint/strict-boolean-expressions
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      if (comment.body?.includes(commentPrefix)) {
         console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
 
         await octokit.rest.issues
@@ -57,23 +58,17 @@ async function run(): Promise<void> {
     });
     const { stdout: licenseReport } = await exec.getExecOutput(
       "yarn",
-      [
-        "license-compliance",
-        "--production",
-        "--format",
-        "json",
-        "--report",
-        "summary",
-      ],
+      ["license-compliance", "--production", "--format", "json", "--report", "summary"],
       { silent: true },
     );
 
     const writePullRequestComment = async (comment: string): Promise<void> => {
-      await octokit.rest.issues.createComment({
-        ...context.repo,
-        issue_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
-        body: comment,
-      })
+      await octokit.rest.issues
+        .createComment({
+          ...context.repo,
+          issue_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
+          body: comment,
+        })
         .catch((error: unknown) => {
           throw new Error(`Unable to create review comment: ${error as string}`);
         });

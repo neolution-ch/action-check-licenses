@@ -1,21 +1,21 @@
-name: 'Check licenses'
-author: 'Neolution'
+name: "Check licenses"
+author: "Neolution"
 branding:
-  icon: 'check-circle'
-  color: 'orange'
-description: 'This action check for the licenses of the repo and add a comment to the pr'
+  icon: "check-circle"
+  color: "orange"
+description: "This action check for the licenses of the repo and add a comment to the pr"
 inputs:
   GITHUB_TOKEN:
-    description: 'Github token of the repository (automatically created by Github)'
+    description: "Github token of the repository (automatically created by Github)"
     required: true
   continueOnBlockedFound:
-    description: 'Whether to continue even if blocked licenses are found'
+    description: "Whether to continue even if blocked licenses are found"
     required: false
-    default: 'false'
+    default: "false"
   blockedLicenses:
-    description: 'The list of disallowed licenses'
+    description: "The list of disallowed licenses"
     required: false
-    default: ''
+    default: ""
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  using: "node16"
+  main: "dist/index.js"

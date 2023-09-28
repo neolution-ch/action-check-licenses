@@ -1,6 +1,6 @@
 {
   "name": "@neolution-ch/action-check-licenses",
-  "version": "1.4.0",
+  "version": "0.0.0",
   "description": "This action checks the repo for the npm and nuget licenses and adds a comment to the pull request",
   "homepage": "https://github.com/neolution-ch/action-check-licenses",
   "license": "MIT",
@@ -11,6 +11,8 @@
     "build": "ncc build src/index.ts --license licenses.txt -o dist && shx sed -i \"s/\\x0D$//g\" ./dist/index.js",
     "prelint1": "git ls-files | xargs eclint check",
     "lint": "eslint \"**/*.{ts,tsx}\" --cache --max-warnings 0",
+    "prettier-check": "prettier --check .",
+    "prettier-write": "prettier --write .",
     "upgradeAll": "npm-check-updates --packageFile ./package.json -u"
   },
   "repository": {
@@ -29,6 +31,7 @@
     "eclint": "^2.8.1",
     "eslint": "^8.50.0",
     "npm-check-updates": "^16.14.4",
+    "prettier": "^3.0.3",
     "shx": "^0.3.4",
     "typescript": "^4.8.4"
   }
