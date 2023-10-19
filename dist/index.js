@@ -14040,8 +14040,9 @@ function run() {
                             core.info(`testing: ${packageJsonPath}`);
                             fs.accessSync(packageJsonPath);
                             core.info(`package.json found: ${fullPath}`);
-                            const fullPath2 = yield path.resolve(fullPath);
-                            yield process.chdir(fullPath2);
+                            const fullPath2 = path.resolveSync(fullPath);
+                            core.info(`package.json found: ${fullPath2}`);
+                            //await process.chdir(fullPath2);
                             if (fullPath === "asdf") {
                                 yield processNpm(fullPath);
                             }
