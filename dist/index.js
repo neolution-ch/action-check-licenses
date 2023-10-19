@@ -13948,6 +13948,8 @@ const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const github = __importStar(__nccwpck_require__(5438));
 const commentPrefix = "[action-check-licenses]";
+const fs = __nccwpck_require__(7147);
+const path = __nccwpck_require__(1017);
 /**
  * The main entry point
  */
@@ -13985,10 +13987,6 @@ function run() {
                     });
                 }
             }
-            yield exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
-                silent: false,
-            });
-            const { stdout: licenseReport } = yield exec.getExecOutput("yarn", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: false });
             const writePullRequestComment = (comment) => __awaiter(this, void 0, void 0, function* () {
                 yield octokit.rest.issues
                     .createComment(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber, body: comment }))
@@ -13997,6 +13995,10 @@ function run() {
                 });
             });
             const processNpm = () => __awaiter(this, void 0, void 0, function* () {
+                yield exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
+                    silent: false,
+                });
+                const { stdout: licenseReport } = yield exec.getExecOutput("yarn", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: false });
                 // take valid part of the report
                 const regex = /\[[\s\S]*\]/;
                 const match = regex.exec(licenseReport);
@@ -14025,7 +14027,29 @@ function run() {
                     console.error("Unable to extract license report"); // eslint-disable-line no-console
                 }
             });
-            yield processNpm();
+            function findPackageJsonFolders(currentPath) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    const dirents = yield fs.readdir(currentPath, { withFileTypes: true });
+                    for (const dirent of dirents) {
+                        const fullPath = path.join(currentPath, dirent.name);
+                        if (dirent.isDirectory()) {
+                            const packageJsonPath = path.join(fullPath, 'package.json');
+                            try {
+                                yield fs.access(packageJsonPath);
+                                console.log(`Found package.json in: ${fullPath}`);
+                                process.chdir(fullPath);
+                                console.log(`Changed directory to: ${process.cwd()}`);
+                                yield processNpm();
+                            }
+                            catch (error) {
+                                // package.json does not exist in the directory
+                            }
+                            yield findPackageJsonFolders(fullPath);
+                        }
+                    }
+                });
+            }
+            findPackageJsonFolders('./');
         }
         catch (error) {
             if (error instanceof Error) {

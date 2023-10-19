@@ -3,6 +3,8 @@ import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 
 const commentPrefix = "[action-check-licenses]";
+const fs = require('fs');
+const path = require('path');
 
 /**
  * The main entry point
@@ -53,15 +55,6 @@ async function run(): Promise<void> {
       }
     }
 
-    await exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
-      silent: false,
-    });
-    const { stdout: licenseReport } = await exec.getExecOutput(
-      "yarn",
-      ["license-compliance", "--production", "--format", "json", "--report", "summary"],
-      { silent: false },
-    );
-
     const writePullRequestComment = async (comment: string): Promise<void> => {
       await octokit.rest.issues
         .createComment({
@@ -75,6 +68,17 @@ async function run(): Promise<void> {
     };
 
     const processNpm = async (): Promise<void> => {
+
+      await exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
+        silent: false,
+      });
+
+      const { stdout: licenseReport } = await exec.getExecOutput(
+        "yarn",
+        ["license-compliance", "--production", "--format", "json", "--report", "summary"],
+        { silent: false },
+      );
+
       // take valid part of the report
       const regex = /\[[\s\S]*\]/;
       const match = regex.exec(licenseReport);
@@ -111,7 +115,29 @@ async function run(): Promise<void> {
       }
     };
 
-    await processNpm();
+    async function findPackageJsonFolders(currentPath : string) {
+      const dirents = await fs.readdir(currentPath, { withFileTypes: true });
+      for (const dirent of dirents) {
+          const fullPath = path.join(currentPath, dirent.name);
+          if (dirent.isDirectory()) {
+              const packageJsonPath = path.join(fullPath, 'package.json');
+              try {
+                  await fs.access(packageJsonPath);
+                  console.log(`Found package.json in: ${fullPath}`);
+                  process.chdir(fullPath);
+                  console.log(`Changed directory to: ${process.cwd()}`);
+                  await processNpm();
+              } catch (error) {
+                  // package.json does not exist in the directory
+              }
+              await findPackageJsonFolders(fullPath);
+          }
+      }
+    }
+
+    findPackageJsonFolders('./');
+
+
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error);
