@@ -85,7 +85,7 @@ async function run(): Promise<void> {
 
       // if we found something, process it
       if (match) {
-        let prComment = `## NPM License Report ${projectPath}\n\n`;
+        let prComment = `## NPM License Report: ${projectPath}\n\n`;
         const licenses = JSON.parse(match[0]) as {
           name: string;
           count: number;
@@ -104,7 +104,6 @@ async function run(): Promise<void> {
           prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
         }
 
-        prComment += `\n\nCreated by ${commentPrefix}\n`;
         await writePullRequestComment(prComment);
 
         if (!continueOnBlockedFound && blockedLicenseNames) {
@@ -132,7 +131,7 @@ async function run(): Promise<void> {
                   core.info(`package.json found: ${fullPath}`);
                   const fullPath2 = await path.resolve(fullPath);
                   await process.chdir(fullPath2);
-                  await processNpm(fullPath);
+                  processNpm(fullPath);
               } catch (error) {
                   // package.json does not exist in the directory
               }
