@@ -120,22 +120,32 @@ async function run(): Promise<void> {
       for (const dirent of dirents) {
           const fullPath = path.join(currentPath, dirent.name);
           if (dirent.isDirectory()) {
+            if (fullPath.includes('node_modules') || dirent.name.startsWith('.')) {
+              continue;
+          }
+
               const packageJsonPath = path.join(fullPath, 'package.json');
               try {
                   await fs.access(packageJsonPath);
-                  console.log(`Found package.json in: ${fullPath}`);
-                  process.chdir(fullPath);
-                  console.log(`Changed directory to: ${process.cwd()}`);
+                  console.log(packageJsonPath);
+
+                  const fullPath2 = path.resolve(fullPath);
+                  console.log(`Found package.json in: ${fullPath2}`);
+                  console.log(fullPath2);
+                  await process.chdir(fullPath);
+                  console.log("changedir was ok");
                   await processNpm();
+                  //console.log(`Changed directory to: ${process.cwd()}`);
               } catch (error) {
                   // package.json does not exist in the directory
               }
-              await findPackageJsonFolders(fullPath);
+              //await findPackageJsonFolders(fullPath);
           }
       }
     }
 
     findPackageJsonFolders('./');
+
 
 
   } catch (error) {
