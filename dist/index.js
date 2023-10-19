@@ -14041,7 +14041,9 @@ function run() {
                             core.info(`package.json found: ${fullPath}`);
                             const fullPath2 = yield path.resolve(fullPath);
                             yield process.chdir(fullPath2);
-                            processNpm(fullPath);
+                            if (fullPath === "asdf") {
+                                yield processNpm(fullPath);
+                            }
                         }
                         catch (error) {
                             // package.json does not exist in the directory

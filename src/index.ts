@@ -131,7 +131,11 @@ async function run(): Promise<void> {
                   core.info(`package.json found: ${fullPath}`);
                   const fullPath2 = await path.resolve(fullPath);
                   await process.chdir(fullPath2);
-                  //await processNpm(fullPath);
+
+                  if (fullPath === "asdf")
+                  {
+                    await processNpm(fullPath);
+                  }
               } catch (error) {
                   // package.json does not exist in the directory
               }
