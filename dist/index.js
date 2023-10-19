@@ -14039,7 +14039,7 @@ function run() {
                         packageJsonPath = yield path.resolve(packageJsonPath);
                         core.info(`Testing for file: ${packageJsonPath}`);
                         try {
-                            yield fs.access(packageJsonPath);
+                            fs.accessSync(packageJsonPath);
                             core.info(`=> package.json found`);
                             const fullPath2 = yield path.resolve(fullPath);
                             core.info(`Found package.json in: ${fullPath2}`);
@@ -14050,7 +14050,6 @@ function run() {
                         }
                         catch (error) {
                             // package.json does not exist in the directory
-                            core.info(`=> nothing found`);
                         }
                         //await findPackageJsonFolders(fullPath);
                     }
