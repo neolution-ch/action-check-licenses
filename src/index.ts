@@ -105,8 +105,10 @@ async function run(): Promise<void> {
         }
 
         await writePullRequestComment(prComment);
+        core.info(`npm process done for: ${projectPath}`);
 
         if (!continueOnBlockedFound && blockedLicenseNames) {
+          core.info(`Detected not allowed licenses (continueOnBlockedFound = false)`);
           throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
         }
       } else {
@@ -133,11 +135,8 @@ async function run(): Promise<void> {
                   const fullPath2 = path.resolveSync(fullPath);
                   core.info(`package.json found: ${fullPath2}`);
                   await process.chdir(fullPath2);
+                  await processNpm(fullPath);
 
-                  if (fullPath === "asdf")
-                  {
-                    await processNpm(fullPath);
-                  }
               } catch (error) {
                   // package.json does not exist in the directory
               }

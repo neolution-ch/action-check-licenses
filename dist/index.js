@@ -14018,7 +14018,9 @@ function run() {
                         prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
                     }
                     yield writePullRequestComment(prComment);
+                    core.info(`npm process done for: ${projectPath}`);
                     if (!continueOnBlockedFound && blockedLicenseNames) {
+                        core.info(`Detected not allowed licenses (continueOnBlockedFound = false)`);
                         throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
                     }
                 }
@@ -14043,9 +14045,7 @@ function run() {
                             const fullPath2 = path.resolveSync(fullPath);
                             core.info(`package.json found: ${fullPath2}`);
                             yield process.chdir(fullPath2);
-                            if (fullPath === "asdf") {
-                                yield processNpm(fullPath);
-                            }
+                            yield processNpm(fullPath);
                         }
                         catch (error) {
                             // package.json does not exist in the directory
