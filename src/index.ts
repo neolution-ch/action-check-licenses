@@ -125,6 +125,8 @@ async function run(): Promise<void> {
           }
 
               const packageJsonPath = path.join(fullPath, 'package.json');
+              core.info(`Testing for file: ${packageJsonPath}`);
+
               try {
                   await fs.access(packageJsonPath);
                   console.log(packageJsonPath);
@@ -143,7 +145,7 @@ async function run(): Promise<void> {
       }
     }
 
-    findPackageJsonFolders('./').catch(console.error);
+    findPackageJsonFolders('./');
 
 
 
