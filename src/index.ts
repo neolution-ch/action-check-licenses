@@ -71,7 +71,7 @@ async function run(): Promise<void> {
       core.info(`processNpm for: ${projectPath}`);
 
       const { stdout: licenseReport } = await exec.getExecOutput(
-        "npx",
+        "npm",
         ["license-compliance", "--production", "--format", "json", "--report", "summary"],
         { silent: false },
       );
@@ -135,10 +135,9 @@ async function run(): Promise<void> {
 
               core.info(`package.json found: ${fullPath}`);
               const fullPath2 = await path.resolve(fullPath);
-              core.info(`package.json found: ${fullPath2}`);
+              core.info(`changing dir to found: ${fullPath2}`);
               const currentFolder = process.cwd()
               await process.chdir(fullPath2);
-              core.info(`chdir finished`);
               await processNpm(fullPath);
               core.info(`changing dir back to ${currentFolder}`);
               await process.chdir(currentFolder);

@@ -13996,7 +13996,7 @@ function run() {
             });
             const processNpm = (projectPath) => __awaiter(this, void 0, void 0, function* () {
                 core.info(`processNpm for: ${projectPath}`);
-                const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: false });
+                const { stdout: licenseReport } = yield exec.getExecOutput("npm", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: false });
                 // take valid part of the report
                 const regex = /\[[\s\S]*\]/;
                 const match = regex.exec(licenseReport);
@@ -14046,10 +14046,9 @@ function run() {
                         }
                         core.info(`package.json found: ${fullPath}`);
                         const fullPath2 = yield path.resolve(fullPath);
-                        core.info(`package.json found: ${fullPath2}`);
+                        core.info(`changing dir to found: ${fullPath2}`);
                         const currentFolder = process.cwd();
                         yield process.chdir(fullPath2);
-                        core.info(`chdir finished`);
                         yield processNpm(fullPath);
                         core.info(`changing dir back to ${currentFolder}`);
                         yield process.chdir(currentFolder);
