@@ -14027,35 +14027,33 @@ function run() {
                     console.error("Unable to extract license report"); // eslint-disable-line no-console
                 }
             });
-            function findPackageJsonFolders(currentPath) {
-                return __awaiter(this, void 0, void 0, function* () {
-                    const dirents = yield fs.readdir(currentPath, { withFileTypes: true });
-                    for (const dirent of dirents) {
-                        const fullPath = path.join(currentPath, dirent.name);
-                        if (dirent.isDirectory()) {
-                            if (fullPath.includes('node_modules') || dirent.name.startsWith('.')) {
-                                continue;
-                            }
-                            const packageJsonPath = path.join(fullPath, 'package.json');
-                            try {
-                                yield fs.access(packageJsonPath);
-                                console.log(packageJsonPath);
-                                const fullPath2 = path.resolve(fullPath);
-                                console.log(`Found package.json in: ${fullPath2}`);
-                                console.log(fullPath2);
-                                yield process.chdir(fullPath);
-                                console.log("changedir was ok");
-                                yield processNpm();
-                                //console.log(`Changed directory to: ${process.cwd()}`);
-                            }
-                            catch (error) {
-                                // package.json does not exist in the directory
-                            }
-                            //await findPackageJsonFolders(fullPath);
+            const findPackageJsonFolders = (currentPath) => __awaiter(this, void 0, void 0, function* () {
+                const dirents = yield fs.readdir(currentPath, { withFileTypes: true });
+                for (const dirent of dirents) {
+                    const fullPath = path.join(currentPath, dirent.name);
+                    if (dirent.isDirectory()) {
+                        if (fullPath.includes('node_modules') || dirent.name.startsWith('.')) {
+                            continue;
                         }
+                        const packageJsonPath = path.join(fullPath, 'package.json');
+                        try {
+                            yield fs.access(packageJsonPath);
+                            console.log(packageJsonPath);
+                            const fullPath2 = path.resolve(fullPath);
+                            console.log(`Found package.json in: ${fullPath2}`);
+                            console.log(fullPath2);
+                            yield process.chdir(fullPath);
+                            console.log("changedir was ok");
+                            yield processNpm();
+                            //console.log(`Changed directory to: ${process.cwd()}`);
+                        }
+                        catch (error) {
+                            // package.json does not exist in the directory
+                        }
+                        //await findPackageJsonFolders(fullPath);
                     }
-                });
-            }
+                }
+            });
             findPackageJsonFolders('./');
         }
         catch (error) {
