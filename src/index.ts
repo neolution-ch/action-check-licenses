@@ -129,7 +129,7 @@ async function run(): Promise<void> {
 
               try {
                   await fs.access(packageJsonPath);
-                  console.log(packageJsonPath);
+                  core.info(`=> package.json found`);
                   const fullPath2 = await path.resolve(fullPath);
                   core.info(`Found package.json in: ${fullPath2}`);
                   await process.chdir(fullPath);
@@ -138,6 +138,8 @@ async function run(): Promise<void> {
                   //console.log(`Changed directory to: ${process.cwd()}`);
               } catch (error) {
                   // package.json does not exist in the directory
+                  core.info(`=> nothing found`);
+
               }
               //await findPackageJsonFolders(fullPath);
           }
