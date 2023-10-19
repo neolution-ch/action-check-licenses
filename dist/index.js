@@ -14004,7 +14004,7 @@ function run() {
                 const match = regex.exec(licenseReport);
                 // if we found something, process it
                 if (match) {
-                    let prComment = `## NPM License Report ${projectPath}\n\n`;
+                    let prComment = `## NPM License Report: ${projectPath}\n\n`;
                     const licenses = JSON.parse(match[0]);
                     licenses.forEach((license) => {
                         console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
@@ -14017,7 +14017,6 @@ function run() {
                     if (blockedLicenseNames) {
                         prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
                     }
-                    prComment += `\n\nCreated by ${commentPrefix}\n`;
                     yield writePullRequestComment(prComment);
                     if (!continueOnBlockedFound && blockedLicenseNames) {
                         throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
@@ -14042,7 +14041,7 @@ function run() {
                             core.info(`package.json found: ${fullPath}`);
                             const fullPath2 = yield path.resolve(fullPath);
                             yield process.chdir(fullPath2);
-                            yield processNpm(fullPath);
+                            processNpm(fullPath);
                         }
                         catch (error) {
                             // package.json does not exist in the directory
