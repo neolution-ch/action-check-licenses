@@ -13994,7 +13994,7 @@ function run() {
                     throw new Error(`Unable to create review comment: ${error}`);
                 });
             });
-            const processNpm = () => __awaiter(this, void 0, void 0, function* () {
+            const processNpm = (projectPath) => __awaiter(this, void 0, void 0, function* () {
                 yield exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
                     silent: false,
                 });
@@ -14004,7 +14004,7 @@ function run() {
                 const match = regex.exec(licenseReport);
                 // if we found something, process it
                 if (match) {
-                    let prComment = "## NPM License Report\n\n";
+                    let prComment = `## NPM License Report ${projectPath}\n\n`;
                     const licenses = JSON.parse(match[0]);
                     licenses.forEach((license) => {
                         console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
@@ -14042,7 +14042,7 @@ function run() {
                             core.info(`package.json found: ${fullPath}`);
                             const fullPath2 = yield path.resolve(fullPath);
                             yield process.chdir(fullPath2);
-                            yield processNpm();
+                            yield processNpm(fullPath);
                         }
                         catch (error) {
                             // package.json does not exist in the directory

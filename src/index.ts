@@ -67,7 +67,7 @@ async function run(): Promise<void> {
         });
     };
 
-    const processNpm = async (): Promise<void> => {
+    const processNpm = async (projectPath: string): Promise<void> => {
 
       await exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
         silent: false,
@@ -85,7 +85,7 @@ async function run(): Promise<void> {
 
       // if we found something, process it
       if (match) {
-        let prComment = "## NPM License Report\n\n";
+        let prComment = `## NPM License Report ${projectPath}\n\n`;
         const licenses = JSON.parse(match[0]) as {
           name: string;
           count: number;
@@ -132,7 +132,7 @@ async function run(): Promise<void> {
                   core.info(`package.json found: ${fullPath}`);
                   const fullPath2 = await path.resolve(fullPath);
                   await process.chdir(fullPath2);
-                  await processNpm();
+                  await processNpm(fullPath);
               } catch (error) {
                   // package.json does not exist in the directory
               }
