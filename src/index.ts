@@ -71,7 +71,7 @@ async function run(): Promise<void> {
       core.info(`processNpm for: ${projectPath}`);
 
       const { stdout: licenseReport } = await exec.getExecOutput(
-        "yarn",
+        "npx",
         ["license-compliance", "--production", "--format", "json", "--report", "summary"],
         { silent: false },
       );
