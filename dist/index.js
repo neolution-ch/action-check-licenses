@@ -14058,6 +14058,9 @@ function run() {
             });
             // https://github.com/actions/runner-images/issues/599
             process.env.NPM_CONFIG_PREFIX = '~/.npm-global';
+            yield exec.exec("sudo", ["mkdir", "~/.npm-global"], {
+                silent: false,
+            });
             yield exec.exec("sudo", ["npm", "install", "--g", "license-compliance"], {
                 silent: false,
             });
