@@ -14040,7 +14040,7 @@ function run() {
                         try {
                             yield fs.access(packageJsonPath);
                             console.log(packageJsonPath);
-                            const fullPath2 = path.resolve(fullPath);
+                            const fullPath2 = yield path.resolve(fullPath);
                             core.info(`Found package.json in: ${fullPath2}`);
                             yield process.chdir(fullPath);
                             core.info("changedir was ok");
