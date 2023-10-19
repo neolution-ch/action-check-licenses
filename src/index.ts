@@ -145,7 +145,7 @@ async function run(): Promise<void> {
       }
     }
 
-    findPackageJsonFolders('./');
+    await findPackageJsonFolders('./');
 
 
 

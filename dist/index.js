@@ -14036,14 +14036,14 @@ function run() {
                             continue;
                         }
                         const packageJsonPath = path.join(fullPath, 'package.json');
+                        core.info(`Testing for file: ${packageJsonPath}`);
                         try {
                             yield fs.access(packageJsonPath);
                             console.log(packageJsonPath);
                             const fullPath2 = path.resolve(fullPath);
-                            console.log(`Found package.json in: ${fullPath2}`);
-                            console.log(fullPath2);
+                            core.info(`Found package.json in: ${fullPath2}`);
                             yield process.chdir(fullPath);
-                            console.log("changedir was ok");
+                            core.info("changedir was ok");
                             yield processNpm();
                             //console.log(`Changed directory to: ${process.cwd()}`);
                         }
@@ -14054,7 +14054,7 @@ function run() {
                     }
                 }
             });
-            findPackageJsonFolders('./').catch(console.error);
+            yield findPackageJsonFolders('./');
         }
         catch (error) {
             if (error instanceof Error) {
