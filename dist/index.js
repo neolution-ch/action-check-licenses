@@ -14042,16 +14042,17 @@ function run() {
                         try {
                             core.info(`testing: ${packageJsonPath}`);
                             fs.accessSync(packageJsonPath);
-                            core.info(`package.json found: ${fullPath}`);
-                            const fullPath2 = path.resolveSync(fullPath);
-                            core.info(`package.json found: ${fullPath2}`);
-                            yield process.chdir(fullPath2);
-                            core.info(`chdir finished`);
-                            yield processNpm(fullPath);
                         }
                         catch (error) {
                             // package.json does not exist in the directory
+                            continue;
                         }
+                        core.info(`package.json found: ${fullPath}`);
+                        const fullPath2 = path.resolveSync(fullPath);
+                        core.info(`package.json found: ${fullPath2}`);
+                        yield process.chdir(fullPath2);
+                        core.info(`chdir finished`);
+                        yield processNpm(fullPath);
                         //await findPackageJsonFolders(fullPath);
                     }
                 }
