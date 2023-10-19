@@ -14054,7 +14054,7 @@ function run() {
                     }
                 }
             });
-            findPackageJsonFolders('./');
+            findPackageJsonFolders('./').catch(console.error);
         }
         catch (error) {
             if (error instanceof Error) {

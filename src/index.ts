@@ -144,7 +144,7 @@ async function run(): Promise<void> {
       }
     }
 
-    findPackageJsonFolders('./');
+    findPackageJsonFolders('./').catch(console.error);
 
 
 
