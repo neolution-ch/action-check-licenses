@@ -130,8 +130,7 @@ async function run(): Promise<void> {
               try {
                   await fs.access(packageJsonPath);
                   console.log(packageJsonPath);
-
-                  const fullPath2 = path.resolve(fullPath);
+                  const fullPath2 = await path.resolve(fullPath);
                   core.info(`Found package.json in: ${fullPath2}`);
                   await process.chdir(fullPath);
                   core.info("changedir was ok");
