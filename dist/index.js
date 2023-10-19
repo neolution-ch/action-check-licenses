@@ -14060,7 +14060,7 @@ function run() {
             yield exec.exec("sudo", ["npm", "install", "--g", "license-compliance"], {
                 silent: false,
             });
-            yield exec.exec("sudo", ["chown", "-R", "$USER", "/usr/local/lib/node_modules"], {
+            yield exec.exec("sudo", ["chown", "-R", `${process.env.USER}`, "/usr/local/lib/node_modules"], {
                 silent: false,
             });
             yield findPackageJsonFolders('./');

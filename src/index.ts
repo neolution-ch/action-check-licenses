@@ -151,7 +151,7 @@ async function run(): Promise<void> {
     await exec.exec("sudo", ["npm", "install", "--g", "license-compliance"], {
       silent: false,
     });
-    await exec.exec("sudo", ["chown", "-R", "$USER", "/usr/local/lib/node_modules"], {
+    await exec.exec("sudo", ["chown", "-R", `${process.env.USER}`, "/usr/local/lib/node_modules"], {
       silent: false,
     });
 
