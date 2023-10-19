@@ -124,7 +124,9 @@ async function run(): Promise<void> {
               continue;
           }
 
-              const packageJsonPath = path.join(fullPath, 'package.json');
+              let packageJsonPath = path.join(fullPath, 'package.json');
+              packageJsonPath = await path.resolve(packageJsonPath);
+
               core.info(`Testing for file: ${packageJsonPath}`);
 
               try {

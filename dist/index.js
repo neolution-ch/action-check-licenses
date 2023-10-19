@@ -14035,7 +14035,8 @@ function run() {
                         if (fullPath.includes('node_modules') || dirent.name.startsWith('.')) {
                             continue;
                         }
-                        const packageJsonPath = path.join(fullPath, 'package.json');
+                        let packageJsonPath = path.join(fullPath, 'package.json');
+                        packageJsonPath = yield path.resolve(packageJsonPath);
                         core.info(`Testing for file: ${packageJsonPath}`);
                         try {
                             yield fs.access(packageJsonPath);
