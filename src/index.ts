@@ -127,6 +127,7 @@ async function run(): Promise<void> {
               packageJsonPath = await path.resolve(packageJsonPath);
 
               try {
+                  core.info(`testing: ${packageJsonPath}`);
                   fs.accessSync(packageJsonPath);
                   core.info(`package.json found: ${fullPath}`);
                   const fullPath2 = await path.resolve(fullPath);

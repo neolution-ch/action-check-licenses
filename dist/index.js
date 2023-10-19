@@ -14037,6 +14037,7 @@ function run() {
                         let packageJsonPath = path.join(fullPath, 'package.json');
                         packageJsonPath = yield path.resolve(packageJsonPath);
                         try {
+                            core.info(`testing: ${packageJsonPath}`);
                             fs.accessSync(packageJsonPath);
                             core.info(`package.json found: ${fullPath}`);
                             const fullPath2 = yield path.resolve(fullPath);
