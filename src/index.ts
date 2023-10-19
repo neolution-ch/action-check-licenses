@@ -147,7 +147,11 @@ async function run(): Promise<void> {
       }
     }
 
-    await exec.exec("npm", ["install", "--g", "license-compliance"], {
+    // https://github.com/actions/runner-images/issues/599
+    await exec.exec("sudo", ["npm", "install", "--g", "license-compliance"], {
+      silent: false,
+    });
+    await exec.exec("sudo", ["chown", "-R", "$USER", "/usr/local/lib/node_modules"], {
       silent: false,
     });
 
