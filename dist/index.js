@@ -14037,16 +14037,12 @@ function run() {
                         }
                         let packageJsonPath = path.join(fullPath, 'package.json');
                         packageJsonPath = yield path.resolve(packageJsonPath);
-                        core.info(`Testing for file: ${packageJsonPath}`);
                         try {
                             fs.accessSync(packageJsonPath);
-                            core.info(`=> package.json found`);
+                            core.info(`package.json found: ${fullPath}`);
                             const fullPath2 = yield path.resolve(fullPath);
-                            core.info(`Found package.json in: ${fullPath2}`);
-                            yield process.chdir(fullPath);
-                            core.info("changedir was ok");
+                            yield process.chdir(fullPath2);
                             yield processNpm();
-                            //console.log(`Changed directory to: ${process.cwd()}`);
                         }
                         catch (error) {
                             // package.json does not exist in the directory

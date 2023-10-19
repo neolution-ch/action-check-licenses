@@ -127,17 +127,12 @@ async function run(): Promise<void> {
               let packageJsonPath = path.join(fullPath, 'package.json');
               packageJsonPath = await path.resolve(packageJsonPath);
 
-              core.info(`Testing for file: ${packageJsonPath}`);
-
               try {
                   fs.accessSync(packageJsonPath);
-                  core.info(`=> package.json found`);
+                  core.info(`package.json found: ${fullPath}`);
                   const fullPath2 = await path.resolve(fullPath);
-                  core.info(`Found package.json in: ${fullPath2}`);
-                  await process.chdir(fullPath);
-                  core.info("changedir was ok");
+                  await process.chdir(fullPath2);
                   await processNpm();
-                  //console.log(`Changed directory to: ${process.cwd()}`);
               } catch (error) {
                   // package.json does not exist in the directory
               }
