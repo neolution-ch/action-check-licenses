@@ -68,6 +68,7 @@ async function run(): Promise<void> {
     };
 
     const processNpm = async (projectPath: string): Promise<void> => {
+      core.info(`processNpm for: ${projectPath}`);
 
       await exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
         silent: false,
