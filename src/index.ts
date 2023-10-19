@@ -54,12 +54,12 @@ async function run(): Promise<void> {
     }
 
     await exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
-      silent: true,
+      silent: false,
     });
     const { stdout: licenseReport } = await exec.getExecOutput(
       "yarn",
       ["license-compliance", "--production", "--format", "json", "--report", "summary"],
-      { silent: true },
+      { silent: false },
     );
 
     const writePullRequestComment = async (comment: string): Promise<void> => {
