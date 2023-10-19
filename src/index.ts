@@ -116,7 +116,7 @@ async function run(): Promise<void> {
     };
 
     const findPackageJsonFolders = async (currentPath: string): Promise<void> => {
-      const dirents = await fs.readdir(currentPath, { withFileTypes: true });
+      const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
       for (const dirent of dirents) {
           const fullPath = path.join(currentPath, dirent.name);
           if (dirent.isDirectory()) {

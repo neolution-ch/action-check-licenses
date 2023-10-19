@@ -14028,7 +14028,7 @@ function run() {
                 }
             });
             const findPackageJsonFolders = (currentPath) => __awaiter(this, void 0, void 0, function* () {
-                const dirents = yield fs.readdir(currentPath, { withFileTypes: true });
+                const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
                 for (const dirent of dirents) {
                     const fullPath = path.join(currentPath, dirent.name);
                     if (dirent.isDirectory()) {
