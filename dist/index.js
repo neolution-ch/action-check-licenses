@@ -13996,7 +13996,7 @@ function run() {
             });
             const processNpm = (projectPath) => __awaiter(this, void 0, void 0, function* () {
                 core.info(`processNpm for: ${projectPath}`);
-                yield exec.exec("npm", ["install"], {
+                yield exec.exec("yarn", [""], {
                     silent: false,
                 });
                 const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: false });
@@ -14060,7 +14060,7 @@ function run() {
                 }
             });
             // https://github.com/actions/runner-images/issues/599
-            yield exec.exec("npm", ["install", "-g", "license-compliance"], {
+            yield exec.exec("yarn", ["global", "add", "license-compliance"], {
                 silent: false,
             });
             yield findPackageJsonFolders('./');

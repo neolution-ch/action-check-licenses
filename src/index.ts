@@ -70,7 +70,7 @@ async function run(): Promise<void> {
     const processNpm = async (projectPath: string): Promise<void> => {
       core.info(`processNpm for: ${projectPath}`);
 
-      await exec.exec("npm", ["install"], {
+      await exec.exec("yarn", [""], {
         silent: false,
       });
 
@@ -153,7 +153,7 @@ async function run(): Promise<void> {
 
     // https://github.com/actions/runner-images/issues/599
 
-    await exec.exec("npm", ["install", "-g", "license-compliance"], {
+    await exec.exec("yarn", ["global", "add", "license-compliance"], {
       silent: false,
     });
 
