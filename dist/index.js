@@ -13996,7 +13996,7 @@ function run() {
             });
             const processNpm = (projectPath) => __awaiter(this, void 0, void 0, function* () {
                 core.info(`processNpm for: ${projectPath}`);
-                const { stdout: licenseReport } = yield exec.getExecOutput("npm", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: false });
+                const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: false });
                 // take valid part of the report
                 const regex = /\[[\s\S]*\]/;
                 const match = regex.exec(licenseReport);
