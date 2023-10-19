@@ -136,6 +136,7 @@ async function run(): Promise<void> {
                   const fullPath2 = path.resolveSync(fullPath);
                   core.info(`package.json found: ${fullPath2}`);
                   await process.chdir(fullPath2);
+                  core.info(`chdir finished`);
                   await processNpm(fullPath);
 
               } catch (error) {

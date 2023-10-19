@@ -14046,6 +14046,7 @@ function run() {
                             const fullPath2 = path.resolveSync(fullPath);
                             core.info(`package.json found: ${fullPath2}`);
                             yield process.chdir(fullPath2);
+                            core.info(`chdir finished`);
                             yield processNpm(fullPath);
                         }
                         catch (error) {
