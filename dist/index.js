@@ -13996,7 +13996,7 @@ function run() {
             });
             const processNpm = (projectPath) => __awaiter(this, void 0, void 0, function* () {
                 core.info(`processNpm for: ${projectPath}`);
-                yield exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
+                yield exec.exec("npm", ["install", "-g", "license-compliance"], {
                     silent: false,
                 });
                 const { stdout: licenseReport } = yield exec.getExecOutput("yarn", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: false });
