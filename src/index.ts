@@ -70,10 +70,6 @@ async function run(): Promise<void> {
     const processNpm = async (projectPath: string): Promise<void> => {
       core.info(`processNpm for: ${projectPath}`);
 
-      await exec.exec("npm", ["install", "-g", "license-compliance"], {
-        silent: false,
-      });
-
       const { stdout: licenseReport } = await exec.getExecOutput(
         "yarn",
         ["license-compliance", "--production", "--format", "json", "--report", "summary"],
@@ -151,6 +147,10 @@ async function run(): Promise<void> {
           }
       }
     }
+
+    await exec.exec("npm", ["install", "--g", "license-compliance"], {
+      silent: false,
+    });
 
     await findPackageJsonFolders('./');
 
