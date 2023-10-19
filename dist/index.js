@@ -14050,9 +14050,12 @@ function run() {
                         core.info(`package.json found: ${fullPath}`);
                         const fullPath2 = yield path.resolve(fullPath);
                         core.info(`package.json found: ${fullPath2}`);
+                        const currentFolder = process.cwd();
                         yield process.chdir(fullPath2);
                         core.info(`chdir finished`);
                         yield processNpm(fullPath);
+                        core.info(`changing dir back to ${currentFolder}`);
+                        yield process.chdir(currentFolder);
                         //await findPackageJsonFolders(fullPath);
                     }
                 }

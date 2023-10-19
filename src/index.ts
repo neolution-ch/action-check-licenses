@@ -140,9 +140,12 @@ async function run(): Promise<void> {
               core.info(`package.json found: ${fullPath}`);
               const fullPath2 = await path.resolve(fullPath);
               core.info(`package.json found: ${fullPath2}`);
+              const currentFolder = process.cwd()
               await process.chdir(fullPath2);
               core.info(`chdir finished`);
               await processNpm(fullPath);
+              core.info(`changing dir back to ${currentFolder}`);
+              await process.chdir(currentFolder);
 
               //await findPackageJsonFolders(fullPath);
           }
