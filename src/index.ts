@@ -148,16 +148,8 @@ async function run(): Promise<void> {
     }
 
     // https://github.com/actions/runner-images/issues/599
-    process.env.NPM_CONFIG_PREFIX = '~/.npm-global';
 
-    await exec.exec("sudo", ["mkdir", "~/.npm-global"], {
-      silent: false,
-    });
-
-    await exec.exec("sudo", ["npm", "install", "--g", "license-compliance"], {
-      silent: false,
-    });
-    await exec.exec("sudo", ["chown", "-R", `${process.env.USER}`, "/usr/local/lib/node_modules"], {
+    await exec.exec("npm", ["install", "-g", "license-compliance"], {
       silent: false,
     });
 
