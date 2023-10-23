@@ -13948,10 +13948,15 @@ exports.findPackageJsonFolders = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7147));
 const path = __importStar(__nccwpck_require__(1017));
+/**
+ *
+ * @param currentPath
+ * @param ignoreFolders
+ */
 function findPackageJsonFolders(currentPath, ignoreFolders) {
     return __awaiter(this, void 0, void 0, function* () {
         const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
-        let foundFolders = [];
+        const foundFolders = [];
         for (const dirent of dirents) {
             const fullPath = path.join(currentPath, dirent.name);
             if (dirent.isDirectory()) {
@@ -13978,7 +13983,6 @@ function findPackageJsonFolders(currentPath, ignoreFolders) {
     });
 }
 exports.findPackageJsonFolders = findPackageJsonFolders;
-;
 
 
 /***/ }),
@@ -14115,7 +14119,7 @@ function run() {
             // find all package.json folders
             const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders);
             // process each folder
-            for (let folder of packageJsonFolders) {
+            for (const folder of packageJsonFolders) {
                 const fullPath2 = yield path.resolve(folder);
                 const currentFolder = process.cwd();
                 yield process.chdir(fullPath2);

@@ -2,9 +2,14 @@ import * as core from "@actions/core";
 import * as fs from "fs";
 import * as path from "path";
 
-async function findPackageJsonFolders (currentPath: string, ignoreFolders: string[]): Promise<string[]>  {
+/**
+ *
+ * @param currentPath
+ * @param ignoreFolders
+ */
+async function findPackageJsonFolders(currentPath: string, ignoreFolders: string[]): Promise<string[]> {
   const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
-  let foundFolders: string[] = [];
+  const foundFolders: string[] = [];
   for (const dirent of dirents) {
     const fullPath = path.join(currentPath, dirent.name);
     if (dirent.isDirectory()) {
@@ -31,6 +36,6 @@ async function findPackageJsonFolders (currentPath: string, ignoreFolders: strin
     }
   }
   return foundFolders;
-};
+}
 
 export { findPackageJsonFolders };
