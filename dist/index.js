@@ -13949,9 +13949,9 @@ const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7147));
 const path = __importStar(__nccwpck_require__(1017));
 /**
- *
- * @param currentPath
- * @param ignoreFolders
+ * find packages in subfolders that contain a package.json
+ * @param currentPath the path to start searching
+ * @param ignoreFolders folders to ignore
  */
 function findPackageJsonFolders(currentPath, ignoreFolders) {
     return __awaiter(this, void 0, void 0, function* () {

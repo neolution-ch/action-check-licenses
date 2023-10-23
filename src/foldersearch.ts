@@ -3,9 +3,9 @@ import * as fs from "fs";
 import * as path from "path";
 
 /**
- *
- * @param currentPath
- * @param ignoreFolders
+ * find packages in subfolders that contain a package.json
+ * @param currentPath the path to start searching
+ * @param ignoreFolders folders to ignore
  */
 async function findPackageJsonFolders(currentPath: string, ignoreFolders: string[]): Promise<string[]> {
   const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
