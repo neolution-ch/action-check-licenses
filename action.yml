@@ -16,6 +16,10 @@ inputs:
     description: "The list of disallowed licenses"
     required: false
     default: ""
+  ignoreFolders:
+    description: "The list of folders to ignore for the license check"
+    required: false
+    default: ""
 runs:
   using: "node16"
   main: "dist/index.js"

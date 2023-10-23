@@ -5,5 +5,5 @@ module.exports = {
     node: true,
     browser: true,
   },
-  extends: ["@neolution-ch/eslint-config-neolution"],
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/eslint-recommended", "plugin:@typescript-eslint/recommended", "prettier"],
 };
