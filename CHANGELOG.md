@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added support for multiple projects
+- Added `ignoreFolders` parameter for action configuration
+
+### Changed
+
+- Refactored code into multiple files
+
 ## [0.0.1] - 2023-09-28
 
 ### Added

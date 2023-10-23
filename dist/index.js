@@ -13994,6 +13994,87 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 6795:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.findPackageJsonFolders = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const fs = __importStar(__nccwpck_require__(7147));
+const path = __importStar(__nccwpck_require__(1017));
+/**
+ * find packages in subfolders that contain a package.json
+ * @param currentPath the path to start searching
+ * @param ignoreFolders folders to ignore
+ */
+function findPackageJsonFolders(currentPath, ignoreFolders) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
+        const foundFolders = [];
+        for (const dirent of dirents) {
+            const fullPath = path.join(currentPath, dirent.name);
+            if (dirent.isDirectory()) {
+                if (fullPath.includes("node_modules") || dirent.name.startsWith(".")) {
+                    continue;
+                }
+                if (ignoreFolders.some((folder) => dirent.name.startsWith(folder))) {
+                    core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
+                    continue;
+                }
+                let packageJsonPath = path.join(fullPath, "package.json");
+                packageJsonPath = yield path.resolve(packageJsonPath);
+                try {
+                    fs.accessSync(packageJsonPath);
+                }
+                catch (error) {
+                    // package.json does not exist in the directory
+                    continue;
+                }
+                foundFolders.push(fullPath);
+            }
+        }
+        return foundFolders;
+    });
+}
+exports.findPackageJsonFolders = findPackageJsonFolders;
+
+
+/***/ }),
+
 /***/ 6144:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -14033,14 +14114,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const exec = __importStar(__nccwpck_require__(1514));
 const github = __importStar(__nccwpck_require__(5438));
-const commentPrefix = "[action-check-licenses]";
+const foldersearch = __importStar(__nccwpck_require__(6795));
+const prcomment = __importStar(__nccwpck_require__(7654));
+const npmlicensecheck = __importStar(__nccwpck_require__(7893));
 /**
  * The main entry point
  */
 function run() {
-    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { context } = github;
@@ -14048,72 +14129,20 @@ function run() {
                 core.info("===> Not a Pull Request, skipping");
                 return;
             }
-            const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
-            const blockedLicenses = core.getMultilineInput("blockedLicenses");
-            const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
+            // get config values
+            const ignoreFolders = core.getMultilineInput("ignoreFolders");
             const pullRequestNumber = context.payload.pull_request.number;
-            const octokit = github.getOctokit(githubToken);
-            const { data: comments } = yield octokit.rest.issues
-                .listComments(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber }))
-                .catch((error) => {
-                throw new Error(`Unable to get review comments: ${error}`);
-            });
-            // Delete existing comments
-            for (const comment of comments) {
-                if (((_a = comment.user) === null || _a === void 0 ? void 0 : _a.login) !== "github-actions[bot]") {
-                    return;
-                }
-                // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-                if ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) {
-                    console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
-                    yield octokit.rest.issues
-                        .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: comment.id }))
-                        .catch((error) => {
-                        throw new Error(`Unable to delete review comment: ${error}`);
-                    });
-                }
+            // remove old comments
+            yield prcomment.removeOldPullRequestComments(pullRequestNumber);
+            // find all package.json folders
+            const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders);
+            // process each folder
+            for (const folder of packageJsonFolders) {
+                const currentFolder = process.cwd();
+                yield process.chdir(folder);
+                yield npmlicensecheck.processNpm(folder, pullRequestNumber);
+                yield process.chdir(currentFolder);
             }
-            yield exec.exec("npm", ["install", "--save-dev", "license-compliance"], {
-                silent: true,
-            });
-            const { stdout: licenseReport } = yield exec.getExecOutput("yarn", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: true });
-            const writePullRequestComment = (comment) => __awaiter(this, void 0, void 0, function* () {
-                yield octokit.rest.issues
-                    .createComment(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber, body: comment }))
-                    .catch((error) => {
-                    throw new Error(`Unable to create review comment: ${error}`);
-                });
-            });
-            const processNpm = () => __awaiter(this, void 0, void 0, function* () {
-                // take valid part of the report
-                const regex = /\[[\s\S]*\]/;
-                const match = regex.exec(licenseReport);
-                // if we found something, process it
-                if (match) {
-                    let prComment = "## NPM License Report\n\n";
-                    const licenses = JSON.parse(match[0]);
-                    licenses.forEach((license) => {
-                        console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
-                        prComment += `- ${license.name} (${license.count})\n`;
-                    });
-                    const blockedLicenseNames = licenses
-                        .filter((license) => blockedLicenses.includes(license.name))
-                        .map((license) => license.name)
-                        .join(", ");
-                    if (blockedLicenseNames) {
-                        prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
-                    }
-                    prComment += `\n\nCreated by ${commentPrefix}\n`;
-                    yield writePullRequestComment(prComment);
-                    if (!continueOnBlockedFound && blockedLicenseNames) {
-                        throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
-                    }
-                }
-                else {
-                    console.error("Unable to extract license report"); // eslint-disable-line no-console
-                }
-            });
-            yield processNpm();
         }
         catch (error) {
             if (error instanceof Error) {
@@ -14125,8 +14154,173 @@ function run() {
         }
     });
 }
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 run();
+
+
+/***/ }),
+
+/***/ 7893:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.processNpm = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const exec = __importStar(__nccwpck_require__(1514));
+const prcomment = __importStar(__nccwpck_require__(7654));
+const blockedLicenses = core.getMultilineInput("blockedLicenses");
+const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
+const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
+    core.info(`Starting processNpm for: ${projectPath}`);
+    yield exec.exec("yarn", [""], {
+        silent: true,
+    });
+    const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "json", "--report", "summary"], { silent: true });
+    // take valid part of the report
+    const regex = /\[[\s\S]*\]/;
+    const match = regex.exec(licenseReport);
+    // if we found something, process it
+    if (match) {
+        let prComment = `## NPM License Report: ${projectPath}\n\n`;
+        const licenses = JSON.parse(match[0]);
+        licenses.forEach((license) => {
+            core.info(`- License: ${license.name} (${license.count})`);
+            prComment += `- ${license.name} (${license.count})\n`;
+        });
+        const blockedLicenseNames = licenses
+            .filter((license) => blockedLicenses.includes(license.name))
+            .map((license) => license.name)
+            .join(", ");
+        if (blockedLicenseNames) {
+            prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
+        }
+        yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
+        core.info(`Finished processNpm for: ${projectPath}`);
+        if (!continueOnBlockedFound && blockedLicenseNames) {
+            core.info("Detected not allowed licenses (continueOnBlockedFound = false)");
+            throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
+        }
+    }
+    else {
+        core.error("Unable to extract license report");
+    }
+});
+exports.processNpm = processNpm;
+
+
+/***/ }),
+
+/***/ 7654:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.removeOldPullRequestComments = exports.writePullRequestComment = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const github = __importStar(__nccwpck_require__(5438));
+const commentPrefix = "[action-check-licenses]";
+const { context } = github;
+const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
+const octokit = github.getOctokit(githubToken);
+const writePullRequestComment = (comment, pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
+    // append footer note
+    const finalcomment = `${comment}\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
+    yield octokit.rest.issues
+        .createComment(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber, body: finalcomment }))
+        .catch((error) => {
+        throw new Error(`Unable to create review comment: ${error}`);
+    });
+});
+exports.writePullRequestComment = writePullRequestComment;
+const removeOldPullRequestComments = (pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    const { data: comments } = yield octokit.rest.issues
+        .listComments(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber }))
+        .catch((error) => {
+        throw new Error(`Unable to get review comments: ${error}`);
+    });
+    // Delete existing comments
+    for (const comment of comments) {
+        if (((_a = comment.user) === null || _a === void 0 ? void 0 : _a.login) !== "github-actions[bot]") {
+            return;
+        }
+        if ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) {
+            console.log(`Deleting comment id: ${comment.id}`);
+            yield octokit.rest.issues
+                .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: comment.id }))
+                .catch((error) => {
+                throw new Error(`Unable to delete review comment: ${error}`);
+            });
+        }
+    }
+});
+exports.removeOldPullRequestComments = removeOldPullRequestComments;
 
 
 /***/ }),
