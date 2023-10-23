@@ -13965,6 +13965,7 @@ function run() {
             const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
             const blockedLicenses = core.getMultilineInput("blockedLicenses");
             const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
+            const ignoreFolders = core.getMultilineInput("ignoreFolders");
             const pullRequestNumber = context.payload.pull_request.number;
             const octokit = github.getOctokit(githubToken);
             const { data: comments } = yield octokit.rest.issues
@@ -13995,7 +13996,7 @@ function run() {
                 });
             });
             const processNpm = (projectPath) => __awaiter(this, void 0, void 0, function* () {
-                core.info(`processNpm for: ${projectPath}`);
+                core.info(`Starging processNpm for: ${projectPath}`);
                 yield exec.exec("yarn", [""], {
                     silent: true,
                 });
@@ -14020,7 +14021,7 @@ function run() {
                     }
                     prComment += `\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
                     yield writePullRequestComment(prComment);
-                    core.info(`npm process done for: ${projectPath}`);
+                    core.info(`Finished processNpm  for: ${projectPath}`);
                     if (!continueOnBlockedFound && blockedLicenseNames) {
                         core.info(`Detected not allowed licenses (continueOnBlockedFound = false)`);
                         throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
@@ -14036,6 +14037,10 @@ function run() {
                     const fullPath = path.join(currentPath, dirent.name);
                     if (dirent.isDirectory()) {
                         if (fullPath.includes('node_modules') || dirent.name.startsWith('.')) {
+                            continue;
+                        }
+                        if (ignoreFolders.some(folder => dirent.name.startsWith(folder))) {
+                            core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
                             continue;
                         }
                         let packageJsonPath = path.join(fullPath, 'package.json');

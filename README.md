@@ -15,6 +15,9 @@ steps:
       blockedLicenses: |
         GPL
         GPL-2.0
+      ignoreFolders: |
+        MyUnitTestProject
+        IgnoreThisFolder
 ```
 
 # License

@@ -21,6 +21,7 @@ async function run(): Promise<void> {
     const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
     const blockedLicenses = core.getMultilineInput("blockedLicenses");
     const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
+    const ignoreFolders = core.getMultilineInput("ignoreFolders");
     const pullRequestNumber = context.payload.pull_request.number;
 
     const octokit = github.getOctokit(githubToken);
@@ -68,7 +69,7 @@ async function run(): Promise<void> {
     };
 
     const processNpm = async (projectPath: string): Promise<void> => {
-      core.info(`processNpm for: ${projectPath}`);
+      core.info(`Starging processNpm for: ${projectPath}`);
 
       await exec.exec("yarn", [""], {
         silent: true,
@@ -108,7 +109,7 @@ async function run(): Promise<void> {
         prComment += `\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
 
         await writePullRequestComment(prComment);
-        core.info(`npm process done for: ${projectPath}`);
+        core.info(`Finished processNpm  for: ${projectPath}`);
 
         if (!continueOnBlockedFound && blockedLicenseNames) {
           core.info(`Detected not allowed licenses (continueOnBlockedFound = false)`);
@@ -126,7 +127,12 @@ async function run(): Promise<void> {
           if (dirent.isDirectory()) {
             if (fullPath.includes('node_modules') || dirent.name.startsWith('.')) {
               continue;
-          }
+            }
+
+            if (ignoreFolders.some(folder => dirent.name.startsWith(folder))) {
+              core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
+              continue;
+            }
 
               let packageJsonPath = path.join(fullPath, 'package.json');
               packageJsonPath = await path.resolve(packageJsonPath);
