@@ -3,8 +3,8 @@ import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 
 const commentPrefix = "[action-check-licenses]";
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 /**
  * The main entry point
@@ -112,7 +112,7 @@ async function run(): Promise<void> {
         core.info(`Finished processNpm for: ${projectPath}`);
 
         if (!continueOnBlockedFound && blockedLicenseNames) {
-          core.info(`Detected not allowed licenses (continueOnBlockedFound = false)`);
+          core.info("Detected not allowed licenses (continueOnBlockedFound = false)");
           throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
         }
       } else {
@@ -123,45 +123,42 @@ async function run(): Promise<void> {
     const findPackageJsonFolders = async (currentPath: string): Promise<void> => {
       const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
       for (const dirent of dirents) {
-          const fullPath = path.join(currentPath, dirent.name);
-          if (dirent.isDirectory()) {
-            if (fullPath.includes('node_modules') || dirent.name.startsWith('.')) {
-              continue;
-            }
-
-            if (ignoreFolders.some(folder => dirent.name.startsWith(folder))) {
-              core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
-              continue;
-            }
-
-              let packageJsonPath = path.join(fullPath, 'package.json');
-              packageJsonPath = await path.resolve(packageJsonPath);
-
-              try {
-                  fs.accessSync(packageJsonPath);
-              } catch (error) {
-                  // package.json does not exist in the directory
-                  continue;
-              }
-
-              const fullPath2 = await path.resolve(fullPath);
-              const currentFolder = process.cwd()
-              await process.chdir(fullPath2);
-              await processNpm(fullPath);
-              await process.chdir(currentFolder);
+        const fullPath = path.join(currentPath, dirent.name);
+        if (dirent.isDirectory()) {
+          if (fullPath.includes("node_modules") || dirent.name.startsWith(".")) {
+            continue;
           }
+
+          if (ignoreFolders.some((folder) => dirent.name.startsWith(folder))) {
+            core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
+            continue;
+          }
+
+          let packageJsonPath = path.join(fullPath, "package.json");
+          packageJsonPath = await path.resolve(packageJsonPath);
+
+          try {
+            fs.accessSync(packageJsonPath);
+          } catch (error) {
+            // package.json does not exist in the directory
+            continue;
+          }
+
+          const fullPath2 = await path.resolve(fullPath);
+          const currentFolder = process.cwd();
+          await process.chdir(fullPath2);
+          await processNpm(fullPath);
+          await process.chdir(currentFolder);
+        }
       }
-    }
+    };
 
     // https://github.com/actions/runner-images/issues/599
     await exec.exec("yarn", ["global", "add", "license-compliance"], {
       silent: true,
     });
 
-    await findPackageJsonFolders('./');
-
-
-
+    await findPackageJsonFolders("./");
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error);

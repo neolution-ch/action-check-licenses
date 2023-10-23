@@ -14023,7 +14023,7 @@ function run() {
                     yield writePullRequestComment(prComment);
                     core.info(`Finished processNpm for: ${projectPath}`);
                     if (!continueOnBlockedFound && blockedLicenseNames) {
-                        core.info(`Detected not allowed licenses (continueOnBlockedFound = false)`);
+                        core.info("Detected not allowed licenses (continueOnBlockedFound = false)");
                         throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
                     }
                 }
@@ -14036,14 +14036,14 @@ function run() {
                 for (const dirent of dirents) {
                     const fullPath = path.join(currentPath, dirent.name);
                     if (dirent.isDirectory()) {
-                        if (fullPath.includes('node_modules') || dirent.name.startsWith('.')) {
+                        if (fullPath.includes("node_modules") || dirent.name.startsWith(".")) {
                             continue;
                         }
-                        if (ignoreFolders.some(folder => dirent.name.startsWith(folder))) {
+                        if (ignoreFolders.some((folder) => dirent.name.startsWith(folder))) {
                             core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
                             continue;
                         }
-                        let packageJsonPath = path.join(fullPath, 'package.json');
+                        let packageJsonPath = path.join(fullPath, "package.json");
                         packageJsonPath = yield path.resolve(packageJsonPath);
                         try {
                             fs.accessSync(packageJsonPath);
@@ -14064,7 +14064,7 @@ function run() {
             yield exec.exec("yarn", ["global", "add", "license-compliance"], {
                 silent: true,
             });
-            yield findPackageJsonFolders('./');
+            yield findPackageJsonFolders("./");
         }
         catch (error) {
             if (error instanceof Error) {
