@@ -14031,6 +14031,7 @@ const github = __importStar(__nccwpck_require__(5438));
 const path = __importStar(__nccwpck_require__(1017));
 const foldersearch = __importStar(__nccwpck_require__(6795));
 const prcomment = __importStar(__nccwpck_require__(7654));
+const npmlicensecheck = __importStar(__nccwpck_require__(7893));
 /**
  * The main entry point
  */
@@ -14042,47 +14043,12 @@ function run() {
                 core.info("===> Not a Pull Request, skipping");
                 return;
             }
-            const blockedLicenses = core.getMultilineInput("blockedLicenses");
-            const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
+            // get config values
             const ignoreFolders = core.getMultilineInput("ignoreFolders");
             const pullRequestNumber = context.payload.pull_request.number;
+            // remove old comments
             yield prcomment.removeOldPullRequestComments(pullRequestNumber);
-            const processNpm = (projectPath) => __awaiter(this, void 0, void 0, function* () {
-                core.info(`Starting processNpm for: ${projectPath}`);
-                yield exec.exec("yarn", [""], {
-                    silent: true,
-                });
-                const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: true });
-                // take valid part of the report
-                const regex = /\[[\s\S]*\]/;
-                const match = regex.exec(licenseReport);
-                // if we found something, process it
-                if (match) {
-                    let prComment = `## NPM License Report: ${projectPath}\n\n`;
-                    const licenses = JSON.parse(match[0]);
-                    licenses.forEach((license) => {
-                        core.info(`- License: ${license.name} (${license.count})`); // eslint-disable-line no-console
-                        prComment += `- ${license.name} (${license.count})\n`;
-                    });
-                    const blockedLicenseNames = licenses
-                        .filter((license) => blockedLicenses.includes(license.name))
-                        .map((license) => license.name)
-                        .join(", ");
-                    if (blockedLicenseNames) {
-                        prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
-                    }
-                    yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
-                    core.info(`Finished processNpm for: ${projectPath}`);
-                    if (!continueOnBlockedFound && blockedLicenseNames) {
-                        core.info("Detected not allowed licenses (continueOnBlockedFound = false)");
-                        throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
-                    }
-                }
-                else {
-                    console.error("Unable to extract license report"); // eslint-disable-line no-console
-                }
-            });
-            // install license-compliance
+            // install license-compliance, required for NPM
             yield exec.exec("yarn", ["global", "add", "license-compliance"], {
                 silent: true,
             });
@@ -14093,7 +14059,7 @@ function run() {
                 const fullPath2 = yield path.resolve(folder);
                 const currentFolder = process.cwd();
                 yield process.chdir(fullPath2);
-                yield processNpm(folder);
+                yield npmlicensecheck.processNpm(folder, pullRequestNumber);
                 yield process.chdir(currentFolder);
             }
         }
@@ -14109,6 +14075,90 @@ function run() {
 }
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 run();
+
+
+/***/ }),
+
+/***/ 7893:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.processNpm = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const exec = __importStar(__nccwpck_require__(1514));
+const prcomment = __importStar(__nccwpck_require__(7654));
+const blockedLicenses = core.getMultilineInput("blockedLicenses");
+const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
+const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
+    core.info(`Starting processNpm for: ${projectPath}`);
+    yield exec.exec("yarn", [""], {
+        silent: true,
+    });
+    const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: true });
+    // take valid part of the report
+    const regex = /\[[\s\S]*\]/;
+    const match = regex.exec(licenseReport);
+    // if we found something, process it
+    if (match) {
+        let prComment = `## NPM License Report: ${projectPath}\n\n`;
+        const licenses = JSON.parse(match[0]);
+        licenses.forEach((license) => {
+            core.info(`- License: ${license.name} (${license.count})`); // eslint-disable-line no-console
+            prComment += `- ${license.name} (${license.count})\n`;
+        });
+        const blockedLicenseNames = licenses
+            .filter((license) => blockedLicenses.includes(license.name))
+            .map((license) => license.name)
+            .join(", ");
+        if (blockedLicenseNames) {
+            prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
+        }
+        yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
+        core.info(`Finished processNpm for: ${projectPath}`);
+        if (!continueOnBlockedFound && blockedLicenseNames) {
+            core.info("Detected not allowed licenses (continueOnBlockedFound = false)");
+            throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
+        }
+    }
+    else {
+        console.error("Unable to extract license report"); // eslint-disable-line no-console
+    }
+});
+exports.processNpm = processNpm;
 
 
 /***/ }),
