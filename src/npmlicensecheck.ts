@@ -8,9 +8,9 @@ const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
 const processNpm = async (projectPath: string, pullRequestNumber: number): Promise<void> => {
   core.info(`Starting processNpm for: ${projectPath}`);
 
-  /*await exec.exec("yarn", [""], {
+  await exec.exec("yarn", [""], {
     silent: true,
-  });*/
+  });
 
   const { stdout: licenseReport } = await exec.getExecOutput(
     "npx",

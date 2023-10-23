@@ -14205,9 +14205,9 @@ const blockedLicenses = core.getMultilineInput("blockedLicenses");
 const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
 const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
     core.info(`Starting processNpm for: ${projectPath}`);
-    /*await exec.exec("yarn", [""], {
-      silent: true,
-    });*/
+    yield exec.exec("yarn", [""], {
+        silent: true,
+    });
     const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "json", "--report", "summary"], { silent: true });
     // take valid part of the report
     const regex = /\[[\s\S]*\]/;
