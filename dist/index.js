@@ -13996,7 +13996,7 @@ function run() {
                 });
             });
             const processNpm = (projectPath) => __awaiter(this, void 0, void 0, function* () {
-                core.info(`Starging processNpm for: ${projectPath}`);
+                core.info(`Starting processNpm for: ${projectPath}`);
                 yield exec.exec("yarn", [""], {
                     silent: true,
                 });
@@ -14021,7 +14021,7 @@ function run() {
                     }
                     prComment += `\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
                     yield writePullRequestComment(prComment);
-                    core.info(`Finished processNpm  for: ${projectPath}`);
+                    core.info(`Finished processNpm for: ${projectPath}`);
                     if (!continueOnBlockedFound && blockedLicenseNames) {
                         core.info(`Detected not allowed licenses (continueOnBlockedFound = false)`);
                         throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
@@ -14052,7 +14052,6 @@ function run() {
                             // package.json does not exist in the directory
                             continue;
                         }
-                        core.info(`package.json found: ${fullPath}`);
                         const fullPath2 = yield path.resolve(fullPath);
                         const currentFolder = process.cwd();
                         yield process.chdir(fullPath2);

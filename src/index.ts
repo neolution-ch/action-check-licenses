@@ -69,7 +69,7 @@ async function run(): Promise<void> {
     };
 
     const processNpm = async (projectPath: string): Promise<void> => {
-      core.info(`Starging processNpm for: ${projectPath}`);
+      core.info(`Starting processNpm for: ${projectPath}`);
 
       await exec.exec("yarn", [""], {
         silent: true,
@@ -109,7 +109,7 @@ async function run(): Promise<void> {
         prComment += `\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
 
         await writePullRequestComment(prComment);
-        core.info(`Finished processNpm  for: ${projectPath}`);
+        core.info(`Finished processNpm for: ${projectPath}`);
 
         if (!continueOnBlockedFound && blockedLicenseNames) {
           core.info(`Detected not allowed licenses (continueOnBlockedFound = false)`);
@@ -144,7 +144,6 @@ async function run(): Promise<void> {
                   continue;
               }
 
-              core.info(`package.json found: ${fullPath}`);
               const fullPath2 = await path.resolve(fullPath);
               const currentFolder = process.cwd()
               await process.chdir(fullPath2);
