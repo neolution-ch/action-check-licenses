@@ -5,8 +5,6 @@ import * as path from "path";
 import * as foldersearch from "./foldersearch";
 import * as prcomment from "./prcomments";
 
-const commentPrefix = "[action-check-licenses]";
-
 /**
  * The main entry point
  */
@@ -19,43 +17,12 @@ async function run(): Promise<void> {
       return;
     }
 
-    const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
     const blockedLicenses = core.getMultilineInput("blockedLicenses");
     const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
     const ignoreFolders = core.getMultilineInput("ignoreFolders");
     const pullRequestNumber = context.payload.pull_request.number;
 
-    const octokit = github.getOctokit(githubToken);
-
-    const { data: comments } = await octokit.rest.issues
-      .listComments({
-        ...context.repo,
-        issue_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
-      })
-      .catch((error: unknown) => {
-        throw new Error(`Unable to get review comments: ${error as string}`);
-      });
-
-    // Delete existing comments
-    for (const comment of comments) {
-      if (comment.user?.login !== "github-actions[bot]") {
-        return;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (comment.body?.includes(commentPrefix)) {
-        console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
-
-        await octokit.rest.issues
-          .deleteComment({
-            ...context.repo,
-            comment_id: comment.id, // eslint-disable-line @typescript-eslint/naming-convention
-          })
-          .catch((error: unknown) => {
-            throw new Error(`Unable to delete review comment: ${error as string}`);
-          });
-      }
-    }
+    await prcomment.removeOldPullRequestComments(pullRequestNumber);
 
     const processNpm = async (projectPath: string): Promise<void> => {
       core.info(`Starting processNpm for: ${projectPath}`);
@@ -94,8 +61,6 @@ async function run(): Promise<void> {
         if (blockedLicenseNames) {
           prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
         }
-
-        prComment += `\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
 
         await prcomment.writePullRequestComment(prComment, pullRequestNumber);
         core.info(`Finished processNpm for: ${projectPath}`);

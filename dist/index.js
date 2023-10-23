@@ -14031,12 +14031,10 @@ const github = __importStar(__nccwpck_require__(5438));
 const path = __importStar(__nccwpck_require__(1017));
 const foldersearch = __importStar(__nccwpck_require__(6795));
 const prcomment = __importStar(__nccwpck_require__(7654));
-const commentPrefix = "[action-check-licenses]";
 /**
  * The main entry point
  */
 function run() {
-    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { context } = github;
@@ -14044,32 +14042,11 @@ function run() {
                 core.info("===> Not a Pull Request, skipping");
                 return;
             }
-            const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
             const blockedLicenses = core.getMultilineInput("blockedLicenses");
             const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
             const ignoreFolders = core.getMultilineInput("ignoreFolders");
             const pullRequestNumber = context.payload.pull_request.number;
-            const octokit = github.getOctokit(githubToken);
-            const { data: comments } = yield octokit.rest.issues
-                .listComments(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber }))
-                .catch((error) => {
-                throw new Error(`Unable to get review comments: ${error}`);
-            });
-            // Delete existing comments
-            for (const comment of comments) {
-                if (((_a = comment.user) === null || _a === void 0 ? void 0 : _a.login) !== "github-actions[bot]") {
-                    return;
-                }
-                // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-                if ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) {
-                    console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
-                    yield octokit.rest.issues
-                        .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: comment.id }))
-                        .catch((error) => {
-                        throw new Error(`Unable to delete review comment: ${error}`);
-                    });
-                }
-            }
+            yield prcomment.removeOldPullRequestComments(pullRequestNumber);
             const processNpm = (projectPath) => __awaiter(this, void 0, void 0, function* () {
                 core.info(`Starting processNpm for: ${projectPath}`);
                 yield exec.exec("yarn", [""], {
@@ -14094,7 +14071,6 @@ function run() {
                     if (blockedLicenseNames) {
                         prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
                     }
-                    prComment += `\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
                     yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
                     core.info(`Finished processNpm for: ${projectPath}`);
                     if (!continueOnBlockedFound && blockedLicenseNames) {
@@ -14175,13 +14151,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.writePullRequestComment = void 0;
+exports.removeOldPullRequestComments = exports.writePullRequestComment = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+const commentPrefix = "[action-check-licenses]";
 const { context } = github;
 const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
 const octokit = github.getOctokit(githubToken);
 const writePullRequestComment = (comment, pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
+    // append footer note
+    comment += `\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
     yield octokit.rest.issues
         .createComment(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber, body: comment }))
         .catch((error) => {
@@ -14189,6 +14168,30 @@ const writePullRequestComment = (comment, pullRequestNumber) => __awaiter(void 0
     });
 });
 exports.writePullRequestComment = writePullRequestComment;
+const removeOldPullRequestComments = (pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    const { data: comments } = yield octokit.rest.issues
+        .listComments(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber }))
+        .catch((error) => {
+        throw new Error(`Unable to get review comments: ${error}`);
+    });
+    // Delete existing comments
+    for (const comment of comments) {
+        if (((_a = comment.user) === null || _a === void 0 ? void 0 : _a.login) !== "github-actions[bot]") {
+            return;
+        }
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+        if ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) {
+            console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
+            yield octokit.rest.issues
+                .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: comment.id }))
+                .catch((error) => {
+                throw new Error(`Unable to delete review comment: ${error}`);
+            });
+        }
+    }
+});
+exports.removeOldPullRequestComments = removeOldPullRequestComments;
 
 
 /***/ }),
