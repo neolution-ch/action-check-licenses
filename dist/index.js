@@ -13954,7 +13954,7 @@ const path = __nccwpck_require__(1017);
  * The main entry point
  */
 function run() {
-    var _a, _b;
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { context } = github;
@@ -13978,7 +13978,7 @@ function run() {
                     return;
                 }
                 // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-                if ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) {
+                if (((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) || ((_c = comment.body) === null || _c === void 0 ? void 0 : _c.includes("NPM License Report"))) {
                     console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
                     yield octokit.rest.issues
                         .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: comment.id }))
@@ -13997,9 +13997,9 @@ function run() {
             const processNpm = (projectPath) => __awaiter(this, void 0, void 0, function* () {
                 core.info(`processNpm for: ${projectPath}`);
                 yield exec.exec("yarn", [""], {
-                    silent: false,
+                    silent: true,
                 });
-                const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: false });
+                const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: true });
                 // take valid part of the report
                 const regex = /\[[\s\S]*\]/;
                 const match = regex.exec(licenseReport);
@@ -14008,7 +14008,7 @@ function run() {
                     let prComment = `## NPM License Report: ${projectPath}\n\n`;
                     const licenses = JSON.parse(match[0]);
                     licenses.forEach((license) => {
-                        console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
+                        core.info(`- License: ${license.name} (${license.count})`); // eslint-disable-line no-console
                         prComment += `- ${license.name} (${license.count})\n`;
                     });
                     const blockedLicenseNames = licenses
@@ -14018,6 +14018,7 @@ function run() {
                     if (blockedLicenseNames) {
                         prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
                     }
+                    prComment += `\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
                     yield writePullRequestComment(prComment);
                     core.info(`npm process done for: ${projectPath}`);
                     if (!continueOnBlockedFound && blockedLicenseNames) {
@@ -14061,7 +14062,7 @@ function run() {
             });
             // https://github.com/actions/runner-images/issues/599
             yield exec.exec("yarn", ["global", "add", "license-compliance"], {
-                silent: false,
+                silent: true,
             });
             yield findPackageJsonFolders('./');
         }

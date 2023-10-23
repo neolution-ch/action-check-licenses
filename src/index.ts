@@ -41,7 +41,7 @@ async function run(): Promise<void> {
       }
 
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (comment.body?.includes(commentPrefix)) {
+      if (comment.body?.includes(commentPrefix) || comment.body?.includes("NPM License Report")) {
         console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
 
         await octokit.rest.issues
@@ -71,13 +71,13 @@ async function run(): Promise<void> {
       core.info(`processNpm for: ${projectPath}`);
 
       await exec.exec("yarn", [""], {
-        silent: false,
+        silent: true,
       });
 
       const { stdout: licenseReport } = await exec.getExecOutput(
         "npx",
         ["license-compliance", "--production", "--format", "json", "--report", "summary"],
-        { silent: false },
+        { silent: true },
       );
 
       // take valid part of the report
@@ -92,7 +92,7 @@ async function run(): Promise<void> {
           count: number;
         }[];
         licenses.forEach((license: { name: string; count: number }) => {
-          console.log(`License: ${license.name} (${license.count})`); // eslint-disable-line no-console
+          core.info(`- License: ${license.name} (${license.count})`); // eslint-disable-line no-console
           prComment += `- ${license.name} (${license.count})\n`;
         });
 
@@ -104,6 +104,8 @@ async function run(): Promise<void> {
         if (blockedLicenseNames) {
           prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
         }
+
+        prComment += `\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
 
         await writePullRequestComment(prComment);
         core.info(`npm process done for: ${projectPath}`);
@@ -152,9 +154,8 @@ async function run(): Promise<void> {
     }
 
     // https://github.com/actions/runner-images/issues/599
-
     await exec.exec("yarn", ["global", "add", "license-compliance"], {
-      silent: false,
+      silent: true,
     });
 
     await findPackageJsonFolders('./');
