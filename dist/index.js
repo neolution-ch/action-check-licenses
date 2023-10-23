@@ -13954,7 +13954,7 @@ const path = __nccwpck_require__(1017);
  * The main entry point
  */
 function run() {
-    var _a, _b, _c;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { context } = github;
@@ -13978,7 +13978,7 @@ function run() {
                     return;
                 }
                 // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-                if (((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) || ((_c = comment.body) === null || _c === void 0 ? void 0 : _c.includes("NPM License Report"))) {
+                if ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) {
                     console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
                     yield octokit.rest.issues
                         .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: comment.id }))
@@ -14041,7 +14041,6 @@ function run() {
                         let packageJsonPath = path.join(fullPath, 'package.json');
                         packageJsonPath = yield path.resolve(packageJsonPath);
                         try {
-                            core.info(`testing: ${packageJsonPath}`);
                             fs.accessSync(packageJsonPath);
                         }
                         catch (error) {
@@ -14050,13 +14049,10 @@ function run() {
                         }
                         core.info(`package.json found: ${fullPath}`);
                         const fullPath2 = yield path.resolve(fullPath);
-                        core.info(`changing dir to found: ${fullPath2}`);
                         const currentFolder = process.cwd();
                         yield process.chdir(fullPath2);
                         yield processNpm(fullPath);
-                        core.info(`changing dir back to ${currentFolder}`);
                         yield process.chdir(currentFolder);
-                        //await findPackageJsonFolders(fullPath);
                     }
                 }
             });

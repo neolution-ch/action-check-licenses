@@ -41,7 +41,7 @@ async function run(): Promise<void> {
       }
 
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (comment.body?.includes(commentPrefix) || comment.body?.includes("NPM License Report")) {
+      if (comment.body?.includes(commentPrefix)) {
         console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
 
         await octokit.rest.issues
@@ -132,7 +132,6 @@ async function run(): Promise<void> {
               packageJsonPath = await path.resolve(packageJsonPath);
 
               try {
-                  core.info(`testing: ${packageJsonPath}`);
                   fs.accessSync(packageJsonPath);
               } catch (error) {
                   // package.json does not exist in the directory
@@ -141,14 +140,10 @@ async function run(): Promise<void> {
 
               core.info(`package.json found: ${fullPath}`);
               const fullPath2 = await path.resolve(fullPath);
-              core.info(`changing dir to found: ${fullPath2}`);
               const currentFolder = process.cwd()
               await process.chdir(fullPath2);
               await processNpm(fullPath);
-              core.info(`changing dir back to ${currentFolder}`);
               await process.chdir(currentFolder);
-
-              //await findPackageJsonFolders(fullPath);
           }
       }
     }
