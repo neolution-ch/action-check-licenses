@@ -14208,9 +14208,9 @@ const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
 const octokit = github.getOctokit(githubToken);
 const writePullRequestComment = (comment, pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
     // append footer note
-    comment += `\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
+    const finalcomment = `${comment}\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
     yield octokit.rest.issues
-        .createComment(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber, body: comment }))
+        .createComment(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber, body: finalcomment }))
         .catch((error) => {
         throw new Error(`Unable to create review comment: ${error}`);
     });

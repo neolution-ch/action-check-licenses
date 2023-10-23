@@ -7,15 +7,14 @@ const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
 const octokit = github.getOctokit(githubToken);
 
 const writePullRequestComment = async (comment: string, pullRequestNumber: number): Promise<void> => {
-
   // append footer note
-  comment += `\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
+  const finalcomment = `${comment}\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
 
   await octokit.rest.issues
     .createComment({
       ...context.repo,
       issue_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
-      body: comment,
+      body: finalcomment,
     })
     .catch((error: unknown) => {
       throw new Error(`Unable to create review comment: ${error as string}`);
@@ -24,13 +23,13 @@ const writePullRequestComment = async (comment: string, pullRequestNumber: numbe
 
 const removeOldPullRequestComments = async (pullRequestNumber: number): Promise<void> => {
   const { data: comments } = await octokit.rest.issues
-  .listComments({
-    ...context.repo,
-    issue_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
-  })
-  .catch((error: unknown) => {
-    throw new Error(`Unable to get review comments: ${error as string}`);
-  });
+    .listComments({
+      ...context.repo,
+      issue_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
+    })
+    .catch((error: unknown) => {
+      throw new Error(`Unable to get review comments: ${error as string}`);
+    });
 
   // Delete existing comments
   for (const comment of comments) {
@@ -52,7 +51,6 @@ const removeOldPullRequestComments = async (pullRequestNumber: number): Promise<
         });
     }
   }
-}
+};
 
-
-export  {writePullRequestComment, removeOldPullRequestComments }
+export { writePullRequestComment, removeOldPullRequestComments };
