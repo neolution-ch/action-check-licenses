@@ -1,10 +1,10 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as github from "@actions/github";
+import * as fs from "fs";
+import * as path from "path";
 
 const commentPrefix = "[action-check-licenses]";
-const fs = require("fs");
-const path = require("path");
 
 /**
  * The main entry point

@@ -13947,9 +13947,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const github = __importStar(__nccwpck_require__(5438));
+const fs = __importStar(__nccwpck_require__(7147));
+const path = __importStar(__nccwpck_require__(1017));
 const commentPrefix = "[action-check-licenses]";
-const fs = __nccwpck_require__(7147);
-const path = __nccwpck_require__(1017);
 /**
  * The main entry point
  */
