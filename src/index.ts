@@ -1,8 +1,8 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as github from "@actions/github";
-import * as fs from "fs";
 import * as path from "path";
+import * as foldersearch from "./foldersearch";
 
 const commentPrefix = "[action-check-licenses]";
 
@@ -120,45 +120,23 @@ async function run(): Promise<void> {
       }
     };
 
-    const findPackageJsonFolders = async (currentPath: string): Promise<void> => {
-      const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
-      for (const dirent of dirents) {
-        const fullPath = path.join(currentPath, dirent.name);
-        if (dirent.isDirectory()) {
-          if (fullPath.includes("node_modules") || dirent.name.startsWith(".")) {
-            continue;
-          }
-
-          if (ignoreFolders.some((folder) => dirent.name.startsWith(folder))) {
-            core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
-            continue;
-          }
-
-          let packageJsonPath = path.join(fullPath, "package.json");
-          packageJsonPath = await path.resolve(packageJsonPath);
-
-          try {
-            fs.accessSync(packageJsonPath);
-          } catch (error) {
-            // package.json does not exist in the directory
-            continue;
-          }
-
-          const fullPath2 = await path.resolve(fullPath);
-          const currentFolder = process.cwd();
-          await process.chdir(fullPath2);
-          await processNpm(fullPath);
-          await process.chdir(currentFolder);
-        }
-      }
-    };
-
-    // https://github.com/actions/runner-images/issues/599
+    // install license-compliance
     await exec.exec("yarn", ["global", "add", "license-compliance"], {
       silent: true,
     });
 
-    await findPackageJsonFolders("./");
+    // find all package.json folders
+    const packageJsonFolders = await foldersearch.findPackageJsonFolders("./", ignoreFolders);
+
+    // process each folder
+    for (let folder of packageJsonFolders) {
+      const fullPath2 = await path.resolve(folder);
+      const currentFolder = process.cwd();
+      await process.chdir(fullPath2);
+      await processNpm(folder);
+      await process.chdir(currentFolder);
+    }
+
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error);

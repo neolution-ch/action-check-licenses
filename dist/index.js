@@ -13906,6 +13906,83 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 6795:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.findPackageJsonFolders = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const fs = __importStar(__nccwpck_require__(7147));
+const path = __importStar(__nccwpck_require__(1017));
+function findPackageJsonFolders(currentPath, ignoreFolders) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
+        let foundFolders = [];
+        for (const dirent of dirents) {
+            const fullPath = path.join(currentPath, dirent.name);
+            if (dirent.isDirectory()) {
+                if (fullPath.includes("node_modules") || dirent.name.startsWith(".")) {
+                    continue;
+                }
+                if (ignoreFolders.some((folder) => dirent.name.startsWith(folder))) {
+                    core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
+                    continue;
+                }
+                let packageJsonPath = path.join(fullPath, "package.json");
+                packageJsonPath = yield path.resolve(packageJsonPath);
+                try {
+                    fs.accessSync(packageJsonPath);
+                }
+                catch (error) {
+                    // package.json does not exist in the directory
+                    continue;
+                }
+                foundFolders.push(fullPath);
+            }
+        }
+        return foundFolders;
+    });
+}
+exports.findPackageJsonFolders = findPackageJsonFolders;
+;
+
+
+/***/ }),
+
 /***/ 6144:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -13947,8 +14024,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const github = __importStar(__nccwpck_require__(5438));
-const fs = __importStar(__nccwpck_require__(7147));
 const path = __importStar(__nccwpck_require__(1017));
+const foldersearch = __importStar(__nccwpck_require__(6795));
 const commentPrefix = "[action-check-licenses]";
 /**
  * The main entry point
@@ -14031,40 +14108,20 @@ function run() {
                     console.error("Unable to extract license report"); // eslint-disable-line no-console
                 }
             });
-            const findPackageJsonFolders = (currentPath) => __awaiter(this, void 0, void 0, function* () {
-                const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
-                for (const dirent of dirents) {
-                    const fullPath = path.join(currentPath, dirent.name);
-                    if (dirent.isDirectory()) {
-                        if (fullPath.includes("node_modules") || dirent.name.startsWith(".")) {
-                            continue;
-                        }
-                        if (ignoreFolders.some((folder) => dirent.name.startsWith(folder))) {
-                            core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
-                            continue;
-                        }
-                        let packageJsonPath = path.join(fullPath, "package.json");
-                        packageJsonPath = yield path.resolve(packageJsonPath);
-                        try {
-                            fs.accessSync(packageJsonPath);
-                        }
-                        catch (error) {
-                            // package.json does not exist in the directory
-                            continue;
-                        }
-                        const fullPath2 = yield path.resolve(fullPath);
-                        const currentFolder = process.cwd();
-                        yield process.chdir(fullPath2);
-                        yield processNpm(fullPath);
-                        yield process.chdir(currentFolder);
-                    }
-                }
-            });
-            // https://github.com/actions/runner-images/issues/599
+            // install license-compliance
             yield exec.exec("yarn", ["global", "add", "license-compliance"], {
                 silent: true,
             });
-            yield findPackageJsonFolders("./");
+            // find all package.json folders
+            const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders);
+            // process each folder
+            for (let folder of packageJsonFolders) {
+                const fullPath2 = yield path.resolve(folder);
+                const currentFolder = process.cwd();
+                yield process.chdir(fullPath2);
+                yield processNpm(folder);
+                yield process.chdir(currentFolder);
+            }
         }
         catch (error) {
             if (error instanceof Error) {
