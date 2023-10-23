@@ -1,5 +1,4 @@
 import * as core from "@actions/core";
-import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 import * as foldersearch from "./foldersearch";
 import * as prcomment from "./prcomments";
@@ -23,11 +22,6 @@ async function run(): Promise<void> {
 
     // remove old comments
     await prcomment.removeOldPullRequestComments(pullRequestNumber);
-
-    // install license-compliance, required for NPM
-    await exec.exec("yarn", ["global", "add", "license-compliance"], {
-      silent: true,
-    });
 
     // find all package.json folders
     const packageJsonFolders = await foldersearch.findPackageJsonFolders("./", ignoreFolders);

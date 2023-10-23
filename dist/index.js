@@ -14114,7 +14114,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const exec = __importStar(__nccwpck_require__(1514));
 const github = __importStar(__nccwpck_require__(5438));
 const foldersearch = __importStar(__nccwpck_require__(6795));
 const prcomment = __importStar(__nccwpck_require__(7654));
@@ -14135,10 +14134,6 @@ function run() {
             const pullRequestNumber = context.payload.pull_request.number;
             // remove old comments
             yield prcomment.removeOldPullRequestComments(pullRequestNumber);
-            // install license-compliance, required for NPM
-            yield exec.exec("yarn", ["global", "add", "license-compliance"], {
-                silent: true,
-            });
             // find all package.json folders
             const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders);
             // process each folder
@@ -14213,7 +14208,7 @@ const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0,
     yield exec.exec("yarn", [""], {
         silent: true,
     });
-    const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: true });
+    const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "json", "--report", "summary"], { silent: true });
     // take valid part of the report
     const regex = /\[[\s\S]*\]/;
     const match = regex.exec(licenseReport);
