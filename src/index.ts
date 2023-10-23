@@ -3,6 +3,7 @@ import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 import * as path from "path";
 import * as foldersearch from "./foldersearch";
+import * as prcomment from "./prcomments";
 
 const commentPrefix = "[action-check-licenses]";
 
@@ -56,18 +57,6 @@ async function run(): Promise<void> {
       }
     }
 
-    const writePullRequestComment = async (comment: string): Promise<void> => {
-      await octokit.rest.issues
-        .createComment({
-          ...context.repo,
-          issue_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
-          body: comment,
-        })
-        .catch((error: unknown) => {
-          throw new Error(`Unable to create review comment: ${error as string}`);
-        });
-    };
-
     const processNpm = async (projectPath: string): Promise<void> => {
       core.info(`Starting processNpm for: ${projectPath}`);
 
@@ -108,7 +97,7 @@ async function run(): Promise<void> {
 
         prComment += `\n\n<sub>Created by: ${commentPrefix}</sub>\n`;
 
-        await writePullRequestComment(prComment);
+        await prcomment.writePullRequestComment(prComment, pullRequestNumber);
         core.info(`Finished processNpm for: ${projectPath}`);
 
         if (!continueOnBlockedFound && blockedLicenseNames) {
