@@ -14214,7 +14214,7 @@ const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0,
     yield exec.exec("yarn", [""], {
         silent: true,
     });
-    const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: true });
+    const { stdout: licenseReport } = yield exec.getExecOutput("yarn", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: true });
     // take valid part of the report
     const regex = /\[[\s\S]*\]/;
     const match = regex.exec(licenseReport);

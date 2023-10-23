@@ -13,7 +13,7 @@ const processNpm = async (projectPath: string, pullRequestNumber: number): Promi
   });
 
   const { stdout: licenseReport } = await exec.getExecOutput(
-    "npx",
+    "yarn",
     ["license-compliance", "--production", "--format", "json", "--report", "summary"],
     { silent: true },
   );
