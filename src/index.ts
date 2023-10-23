@@ -1,7 +1,6 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as github from "@actions/github";
-import * as path from "path";
 import * as foldersearch from "./foldersearch";
 import * as prcomment from "./prcomments";
 import * as npmlicensecheck from "./npmlicensecheck";
@@ -35,9 +34,8 @@ async function run(): Promise<void> {
 
     // process each folder
     for (const folder of packageJsonFolders) {
-      const fullPath2 = await path.resolve(folder);
       const currentFolder = process.cwd();
-      await process.chdir(fullPath2);
+      await process.chdir(folder);
       await npmlicensecheck.processNpm(folder, pullRequestNumber);
       await process.chdir(currentFolder);
     }

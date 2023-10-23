@@ -14028,7 +14028,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const github = __importStar(__nccwpck_require__(5438));
-const path = __importStar(__nccwpck_require__(1017));
 const foldersearch = __importStar(__nccwpck_require__(6795));
 const prcomment = __importStar(__nccwpck_require__(7654));
 const npmlicensecheck = __importStar(__nccwpck_require__(7893));
@@ -14056,9 +14055,8 @@ function run() {
             const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders);
             // process each folder
             for (const folder of packageJsonFolders) {
-                const fullPath2 = yield path.resolve(folder);
                 const currentFolder = process.cwd();
-                yield process.chdir(fullPath2);
+                yield process.chdir(folder);
                 yield npmlicensecheck.processNpm(folder, pullRequestNumber);
                 yield process.chdir(currentFolder);
             }
