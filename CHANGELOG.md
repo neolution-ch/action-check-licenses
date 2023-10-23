@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2023-10-23
+
 ### Added
 
 - Added support for multiple projects
@@ -22,5 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release with NPM support (nuget coming soon).
 
-[unreleased]: https://github.com/neolution-ch/action-check-licenses/compare/0.0.1...HEAD
+[unreleased]: https://github.com/neolution-ch/action-check-licenses/compare/0.1.0...HEAD
+[0.1.0]: https://github.com/neolution-ch/action-check-licenses/compare/0.0.1...0.1.0
 [0.0.1]: https://github.com/neolution-ch/action-check-licenses/releases/tag/0.0.1
