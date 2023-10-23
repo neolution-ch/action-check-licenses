@@ -13,7 +13,7 @@ const processNpm = async (projectPath: string, pullRequestNumber: number): Promi
   });
 
   const { stdout: licenseReport } = await exec.getExecOutput(
-    "yarn",
+    "npx",
     ["license-compliance", "--production", "--format", "json", "--report", "summary"],
     { silent: true },
   );
@@ -30,7 +30,7 @@ const processNpm = async (projectPath: string, pullRequestNumber: number): Promi
       count: number;
     }[];
     licenses.forEach((license: { name: string; count: number }) => {
-      core.info(`- License: ${license.name} (${license.count})`); // eslint-disable-line no-console
+      core.info(`- License: ${license.name} (${license.count})`);
       prComment += `- ${license.name} (${license.count})\n`;
     });
 
@@ -51,7 +51,7 @@ const processNpm = async (projectPath: string, pullRequestNumber: number): Promi
       throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
     }
   } else {
-    console.error("Unable to extract license report"); // eslint-disable-line no-console
+    core.error("Unable to extract license report");
   }
 };
 

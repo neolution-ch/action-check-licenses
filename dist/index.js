@@ -14159,7 +14159,6 @@ function run() {
         }
     });
 }
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 run();
 
 
@@ -14214,7 +14213,7 @@ const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0,
     yield exec.exec("yarn", [""], {
         silent: true,
     });
-    const { stdout: licenseReport } = yield exec.getExecOutput("yarn", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: true });
+    const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance", "--production", "--format", "json", "--report", "summary"], { silent: true });
     // take valid part of the report
     const regex = /\[[\s\S]*\]/;
     const match = regex.exec(licenseReport);
@@ -14223,7 +14222,7 @@ const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0,
         let prComment = `## NPM License Report: ${projectPath}\n\n`;
         const licenses = JSON.parse(match[0]);
         licenses.forEach((license) => {
-            core.info(`- License: ${license.name} (${license.count})`); // eslint-disable-line no-console
+            core.info(`- License: ${license.name} (${license.count})`);
             prComment += `- ${license.name} (${license.count})\n`;
         });
         const blockedLicenseNames = licenses
@@ -14241,7 +14240,7 @@ const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0,
         }
     }
     else {
-        console.error("Unable to extract license report"); // eslint-disable-line no-console
+        core.error("Unable to extract license report");
     }
 });
 exports.processNpm = processNpm;
@@ -14316,9 +14315,8 @@ const removeOldPullRequestComments = (pullRequestNumber) => __awaiter(void 0, vo
         if (((_a = comment.user) === null || _a === void 0 ? void 0 : _a.login) !== "github-actions[bot]") {
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
         if ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) {
-            console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
+            console.log(`Deleting comment id: ${comment.id}`);
             yield octokit.rest.issues
                 .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: comment.id }))
                 .catch((error) => {

@@ -25,7 +25,7 @@ const removeOldPullRequestComments = async (pullRequestNumber: number): Promise<
   const { data: comments } = await octokit.rest.issues
     .listComments({
       ...context.repo,
-      issue_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
+      issue_number: pullRequestNumber,
     })
     .catch((error: unknown) => {
       throw new Error(`Unable to get review comments: ${error as string}`);
@@ -37,14 +37,13 @@ const removeOldPullRequestComments = async (pullRequestNumber: number): Promise<
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (comment.body?.includes(commentPrefix)) {
-      console.log(`Deleting comment id: ${comment.id}`); // eslint-disable-line no-console
+      console.log(`Deleting comment id: ${comment.id}`);
 
       await octokit.rest.issues
         .deleteComment({
           ...context.repo,
-          comment_id: comment.id, // eslint-disable-line @typescript-eslint/naming-convention
+          comment_id: comment.id,
         })
         .catch((error: unknown) => {
           throw new Error(`Unable to delete review comment: ${error as string}`);
