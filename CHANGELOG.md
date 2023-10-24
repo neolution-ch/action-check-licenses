@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### dependabot: \#14 Bump actions/setup-node from 3 to 4
+
 ### Updated
 
 - Bump actions/checkout from 3 to 4
