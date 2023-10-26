@@ -14217,17 +14217,23 @@ const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0,
         let prComment = `## NPM License Report: ${projectPath}\n\n`;
         let prCommentLicenses = "";
         const licenses = JSON.parse(match[0]);
+        prCommentLicenses += '<ul dir="auto">\n';
         licenses.forEach((license) => {
             core.info(`- License: ${license.name} (${license.count})`);
-            prCommentLicenses += `- ${license.name} (${license.count})\n`;
+            prCommentLicenses += `<li>${license.name} (${license.count})</li>\n`;
         });
+        prCommentLicenses += "</ul>\n";
         const blockedLicenseNames = licenses
             .filter((license) => blockedLicenses.includes(license.name))
             .map((license) => license.name)
             .join(", ");
         if (blockedLicenseNames) {
             prComment += prCommentLicenses;
-            prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
+            prComment += `\n\n:\n`;
+            prComment += "<details open>\n";
+            prComment += "<summary>:warning: Blocked licenses found: ${blockedLicenseNames}</summary>\n";
+            prComment += prCommentLicenses;
+            prComment += "</details>";
         }
         else {
             prComment += "<details>\n";
