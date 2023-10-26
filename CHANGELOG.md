@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Fixed issue when PR contained comments not created by bots
+
 ## [0.2.0] - 2023-10-26
 
 ### Updated
