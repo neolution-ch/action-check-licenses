@@ -34,9 +34,10 @@ const removeOldPullRequestComments = async (pullRequestNumber: number): Promise<
 
   // Delete existing comments
   for (const comment of comments) {
-    core.info(`Verifying comment ${comment.id}: ${comment.user}`);
+    core.info(`Verifying comment ${comment.id}: ${comment.user?.login}`);
 
     if (comment.user?.login !== "github-actions[bot]") {
+      core.info(`Skipping comment id: ${comment.id} because it was not created by the bot`);
       return;
     }
 

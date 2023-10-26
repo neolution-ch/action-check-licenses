@@ -14311,7 +14311,7 @@ const writePullRequestComment = (comment, pullRequestNumber) => __awaiter(void 0
 });
 exports.writePullRequestComment = writePullRequestComment;
 const removeOldPullRequestComments = (pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     const { data: comments } = yield octokit.rest.issues
         .listComments(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber }))
         .catch((error) => {
@@ -14320,11 +14320,12 @@ const removeOldPullRequestComments = (pullRequestNumber) => __awaiter(void 0, vo
     });
     // Delete existing comments
     for (const comment of comments) {
-        core.info(`Verifying comment ${comment.id}: ${comment.user}`);
-        if (((_a = comment.user) === null || _a === void 0 ? void 0 : _a.login) !== "github-actions[bot]") {
+        core.info(`Verifying comment ${comment.id}: ${(_a = comment.user) === null || _a === void 0 ? void 0 : _a.login}`);
+        if (((_b = comment.user) === null || _b === void 0 ? void 0 : _b.login) !== "github-actions[bot]") {
+            core.info(`Skipping comment id: ${comment.id} because it was not created by the bot`);
             return;
         }
-        if ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes(commentPrefix)) {
+        if ((_c = comment.body) === null || _c === void 0 ? void 0 : _c.includes(commentPrefix)) {
             console.log(`Deleting comment id: ${comment.id}`);
             yield octokit.rest.issues
                 .deleteComment(Object.assign(Object.assign({}, context.repo), { comment_id: comment.id }))
