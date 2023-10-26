@@ -14315,10 +14315,12 @@ const removeOldPullRequestComments = (pullRequestNumber) => __awaiter(void 0, vo
     const { data: comments } = yield octokit.rest.issues
         .listComments(Object.assign(Object.assign({}, context.repo), { issue_number: pullRequestNumber }))
         .catch((error) => {
+        core.error(`Unable to get review comments: ${error}`);
         throw new Error(`Unable to get review comments: ${error}`);
     });
     // Delete existing comments
     for (const comment of comments) {
+        core.info(`Verifying comment ${comment.id}: ${comment.user}`);
         if (((_a = comment.user) === null || _a === void 0 ? void 0 : _a.login) !== "github-actions[bot]") {
             return;
         }
