@@ -33,6 +33,8 @@ const removeOldPullRequestComments = async (pullRequestNumber: number): Promise<
     });
 
   // Delete existing comments
+  core.info(`Total comments found: ${comments.length}`);
+
   for (const comment of comments) {
     core.info(`Verifying comment ${comment.id}: ${comment.user?.login}`);
 

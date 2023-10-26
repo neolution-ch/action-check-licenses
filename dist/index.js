@@ -14319,6 +14319,7 @@ const removeOldPullRequestComments = (pullRequestNumber) => __awaiter(void 0, vo
         throw new Error(`Unable to get review comments: ${error}`);
     });
     // Delete existing comments
+    core.info(`Total comments found: ${comments.length}`);
     for (const comment of comments) {
         core.info(`Verifying comment ${comment.id}: ${(_a = comment.user) === null || _a === void 0 ? void 0 : _a.login}`);
         if (((_b = comment.user) === null || _b === void 0 ? void 0 : _b.login) !== "github-actions[bot]") {
