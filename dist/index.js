@@ -14228,8 +14228,6 @@ const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0,
             .map((license) => license.name)
             .join(", ");
         if (blockedLicenseNames) {
-            prComment += prCommentLicenses;
-            prComment += `\n\n:\n`;
             prComment += "<details open>\n";
             prComment += "<summary>:warning: Blocked licenses found: ${blockedLicenseNames}</summary>\n";
             prComment += prCommentLicenses;
