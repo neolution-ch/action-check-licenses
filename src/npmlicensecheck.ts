@@ -45,7 +45,7 @@ const processNpm = async (projectPath: string, pullRequestNumber: number): Promi
 
     if (blockedLicenseNames) {
       prComment += "<details open>\n";
-      prComment += "<summary>:warning: Blocked licenses found: ${blockedLicenseNames}</summary>\n";
+      prComment += `<summary>:warning: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;
       prComment += prCommentLicenses;
       prComment += "</details>";
     } else {
