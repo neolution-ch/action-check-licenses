@@ -14215,17 +14215,29 @@ const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0,
     // if we found something, process it
     if (match) {
         let prComment = `## NPM License Report: ${projectPath}\n\n`;
+        let prCommentLicenses = "";
         const licenses = JSON.parse(match[0]);
+        prCommentLicenses += '<ul dir="auto">\n';
         licenses.forEach((license) => {
             core.info(`- License: ${license.name} (${license.count})`);
-            prComment += `- ${license.name} (${license.count})\n`;
+            prCommentLicenses += `<li>${license.name} (${license.count})</li>\n`;
         });
+        prCommentLicenses += "</ul>\n";
         const blockedLicenseNames = licenses
             .filter((license) => blockedLicenses.includes(license.name))
             .map((license) => license.name)
             .join(", ");
         if (blockedLicenseNames) {
-            prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
+            prComment += "<details open>\n";
+            prComment += `<summary>:warning: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;
+            prComment += prCommentLicenses;
+            prComment += "</details>";
+        }
+        else {
+            prComment += "<details>\n";
+            prComment += "<summary>:white_check_mark: No problematic licenses found</summary>\n";
+            prComment += prCommentLicenses;
+            prComment += "</details>";
         }
         yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
         core.info(`Finished processNpm for: ${projectPath}`);
