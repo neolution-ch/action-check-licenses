@@ -40,7 +40,7 @@ const removeOldPullRequestComments = async (pullRequestNumber: number): Promise<
 
     if (comment.user?.login !== "github-actions[bot]") {
       core.info(`Skipping comment id: ${comment.id} because it was not created by the bot`);
-      return;
+      continue;
     }
 
     if (comment.body?.includes(commentPrefix)) {

@@ -14324,7 +14324,7 @@ const removeOldPullRequestComments = (pullRequestNumber) => __awaiter(void 0, vo
         core.info(`Verifying comment ${comment.id}: ${(_a = comment.user) === null || _a === void 0 ? void 0 : _a.login}`);
         if (((_b = comment.user) === null || _b === void 0 ? void 0 : _b.login) !== "github-actions[bot]") {
             core.info(`Skipping comment id: ${comment.id} because it was not created by the bot`);
-            return;
+            continue;
         }
         if ((_c = comment.body) === null || _c === void 0 ? void 0 : _c.includes(commentPrefix)) {
             console.log(`Deleting comment id: ${comment.id}`);
