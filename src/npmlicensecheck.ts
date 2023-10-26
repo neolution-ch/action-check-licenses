@@ -25,13 +25,14 @@ const processNpm = async (projectPath: string, pullRequestNumber: number): Promi
   // if we found something, process it
   if (match) {
     let prComment = `## NPM License Report: ${projectPath}\n\n`;
+    let prCommentLicenses = "";
     const licenses = JSON.parse(match[0]) as {
       name: string;
       count: number;
     }[];
     licenses.forEach((license: { name: string; count: number }) => {
       core.info(`- License: ${license.name} (${license.count})`);
-      prComment += `- ${license.name} (${license.count})\n`;
+      prCommentLicenses += `- ${license.name} (${license.count})\n`;
     });
 
     const blockedLicenseNames = licenses
@@ -40,7 +41,13 @@ const processNpm = async (projectPath: string, pullRequestNumber: number): Promi
       .join(", ");
 
     if (blockedLicenseNames) {
+      prComment += prCommentLicenses;
       prComment += `\n\n:warning: Blocked licenses found: ${blockedLicenseNames}\n`;
+    } else {
+      prComment += "<details>\n";
+      prComment += "<summary>:white_check_mark: No problematic licenses found</summary>\n";
+      prComment += prCommentLicenses;
+      prComment += "</details>";
     }
 
     await prcomment.writePullRequestComment(prComment, pullRequestNumber);

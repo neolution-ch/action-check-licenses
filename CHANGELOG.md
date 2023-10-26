@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump tibdex/github-app-token from 1 to 2
 - Bump tj-actions/changed-files from 31 to 39
 
+### Changed
+
+- Changed licence ok message as summary
+
 ## [0.1.0] - 2023-10-23
 
 ### Added
