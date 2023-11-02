@@ -14168,7 +14168,10 @@ function run() {
             // find all *.csproj folders
             const csprojFolders = yield foldersearch.findCsProjectFolders("./", ignoreFolders);
             // process each folder
-            yield nugetlicensecheck.processNuget(csprojFolders, pullRequestNumber);
+            const textForComment = yield nugetlicensecheck.processNuget(csprojFolders);
+            let prComment = `## License Report\n\n`;
+            prComment += textForComment;
+            yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
             return;
             // find all package.json folders
             const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders);
@@ -14332,19 +14335,18 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.processNuget = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
-const prcomment = __importStar(__nccwpck_require__(7654));
 const fs = __importStar(__nccwpck_require__(7147));
 const blockedLicenses = core.getMultilineInput("blockedLicenses");
 const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
 let toolInstalled = false;
-const processNuget = (csprojFolders, pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
+const processNuget = (csprojFolders) => __awaiter(void 0, void 0, void 0, function* () {
     if (!toolInstalled) {
         yield exec.exec("dotnet", ["tool", "install", "--global", "dotnet-project-licenses"], {
             silent: true,
         });
         toolInstalled = true;
     }
-    let prComment = `## Nuget License Report\n\n`;
+    let prComment = ``;
     for (const projectPath of csprojFolders) {
         core.info(`Starting processNuget for: ${projectPath}`);
         yield exec.exec("dotnet-project-licenses", ["-i", `${projectPath}`, "-o", "-j", "--outfile", "dotnetlicenses.json"], { silent: false });
@@ -14382,7 +14384,7 @@ const processNuget = (csprojFolders, pullRequestNumber) => __awaiter(void 0, voi
             throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
         }
     }
-    yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
+    return prComment;
 });
 exports.processNuget = processNuget;
 

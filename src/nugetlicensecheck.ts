@@ -1,6 +1,5 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
-import * as prcomment from "./prcomments";
 import * as fs from "fs";
 
 const blockedLicenses = core.getMultilineInput("blockedLicenses");
@@ -23,7 +22,7 @@ interface Package {
   };
 }
 
-const processNuget = async (csprojFolders: string[], pullRequestNumber: number): Promise<void> => {
+const processNuget = async (csprojFolders: string[]): Promise<string> => {
   if (!toolInstalled) {
     await exec.exec("dotnet", ["tool", "install", "--global", "dotnet-project-licenses"], {
       silent: true,
@@ -31,7 +30,7 @@ const processNuget = async (csprojFolders: string[], pullRequestNumber: number):
     toolInstalled = true;
   }
 
-  let prComment = `## Nuget License Report\n\n`;
+  let prComment = ``;
 
   for (const projectPath of csprojFolders) {
     core.info(`Starting processNuget for: ${projectPath}`);
@@ -82,7 +81,7 @@ const processNuget = async (csprojFolders: string[], pullRequestNumber: number):
     }
   }
 
-  await prcomment.writePullRequestComment(prComment, pullRequestNumber);
+  return prComment;
 };
 
 export { processNuget };
