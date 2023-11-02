@@ -14,7 +14,7 @@ const processNuget = async (projectPath: string, pullRequestNumber: number): Pro
 
   const { stdout: licenseReport } = await exec.getExecOutput(
     "dotnet-project-licenses",
-    ["-i", "${projectPath}"],
+    ["-i", `${projectPath}`],
     { silent: false },
   );
 

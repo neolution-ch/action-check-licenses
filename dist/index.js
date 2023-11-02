@@ -14345,7 +14345,7 @@ const processNuget = (projectPath, pullRequestNumber) => __awaiter(void 0, void 
     yield exec.exec("dotnet", ["tool", "install", "--global", "dotnet-project-licenses"], {
         silent: false,
     });
-    const { stdout: licenseReport } = yield exec.getExecOutput("dotnet-project-licenses", ["-i", "${projectPath}"], { silent: false });
+    const { stdout: licenseReport } = yield exec.getExecOutput("dotnet-project-licenses", ["-i", `${projectPath}`], { silent: false });
     return;
     // if we found something, process it
     if (true) {
