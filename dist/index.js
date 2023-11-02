@@ -14355,14 +14355,14 @@ const processNuget = (projectPath, pullRequestNumber) => __awaiter(void 0, void 
     let prCommentLicenses = "";
     const licenses = JSON.parse(licenseReport);
     prCommentLicenses += '<ul dir="auto">\n';
-    licenses.forEach((license) => {
-        core.info(`- License: ${license.packageName} (${license.licenseType})`);
-        prCommentLicenses += `<li>${license.packageName} (${license.licenseType})</li>\n`;
-    });
+    for (let pkg of licenses) {
+        core.info(`- License: ${pkg.PackageName} (${pkg.LicenseType})`);
+        prCommentLicenses += `<li>${pkg.PackageName} (${pkg.LicenseType})</li>\n`;
+    }
     prCommentLicenses += "</ul>\n";
     const blockedLicenseNames = licenses
-        .filter((license) => blockedLicenses.includes(license.licenseType))
-        .map((license) => license.licenseType)
+        .filter((license) => blockedLicenses.includes(license.LicenseType))
+        .map((license) => license.LicenseType)
         .join(", ");
     if (blockedLicenseNames) {
         prComment += "<details open>\n";

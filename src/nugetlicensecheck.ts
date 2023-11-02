@@ -7,6 +7,22 @@ const blockedLicenses = core.getMultilineInput("blockedLicenses");
 const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
 let toolInstalled: boolean = false;
 
+interface Package {
+  PackageName: string;
+  PackageVersion: string;
+  PackageUrl: string;
+  Copyright: string;
+  Authors: string[];
+  Description: string;
+  LicenseUrl: string;
+  LicenseType: string;
+  Repository: {
+      Type: string;
+      Url: string;
+      Commit: string;
+  };
+}
+
 const processNuget = async (projectPath: string, pullRequestNumber: number): Promise<void> => {
   core.info(`Starting processNuget for: ${projectPath}`);
 
@@ -26,21 +42,18 @@ const processNuget = async (projectPath: string, pullRequestNumber: number): Pro
 
   let prComment = `## Nuget License Report: ${projectPath}\n\n`;
   let prCommentLicenses = "";
-  const licenses = JSON.parse(licenseReport) as {
-    packageName: string;
-    licenseType: string;
-  }[];
+  const licenses: Package[] = JSON.parse(licenseReport);
 
   prCommentLicenses += '<ul dir="auto">\n';
-  licenses.forEach((license: { packageName: string; licenseType: string }) => {
-    core.info(`- License: ${license.packageName} (${license.licenseType})`);
-    prCommentLicenses += `<li>${license.packageName} (${license.licenseType})</li>\n`;
-  });
+  for (let pkg of licenses) {
+    core.info(`- License: ${pkg.PackageName} (${pkg.LicenseType})`);
+    prCommentLicenses += `<li>${pkg.PackageName} (${pkg.LicenseType})</li>\n`;
+  }
   prCommentLicenses += "</ul>\n";
 
   const blockedLicenseNames = licenses
-    .filter((license) => blockedLicenses.includes(license.licenseType))
-    .map((license) => license.licenseType)
+    .filter((license) => blockedLicenses.includes(license.LicenseType))
+    .map((license) => license.LicenseType)
     .join(", ");
 
   if (blockedLicenseNames) {
