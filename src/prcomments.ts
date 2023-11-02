@@ -28,13 +28,16 @@ const removeOldPullRequestComments = async (pullRequestNumber: number): Promise<
       issue_number: pullRequestNumber,
     })
     .catch((error: unknown) => {
+      core.error(`Unable to get review comments: ${error as string}`);
       throw new Error(`Unable to get review comments: ${error as string}`);
     });
 
   // Delete existing comments
+  core.info(`Total comments found: ${comments.length}`);
+
   for (const comment of comments) {
     if (comment.user?.login !== "github-actions[bot]") {
-      return;
+      continue;
     }
 
     if (comment.body?.includes(commentPrefix)) {

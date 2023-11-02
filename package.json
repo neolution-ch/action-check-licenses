@@ -1,6 +1,6 @@
 {
   "name": "@neolution-ch/action-check-licenses",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "This action checks the repo for the npm and nuget licenses and adds a comment to the pull request",
   "homepage": "https://github.com/neolution-ch/action-check-licenses",
   "license": "MIT",
@@ -25,7 +25,8 @@
     "@actions/github": "^5.1.1",
     "@typescript-eslint/eslint-plugin": "^6.8.0",
     "@typescript-eslint/parser": "^6.8.0",
-    "eslint-config-prettier": "^9.0.0"
+    "eslint-config-prettier": "^9.0.0",
+    "minimatch": "^9.0.3"
   },
   "devDependencies": {
     "@neolution-ch/eslint-config-neolution": "^1.3.0",
