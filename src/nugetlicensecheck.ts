@@ -50,7 +50,6 @@ const processNuget = async (csprojFolders: string[]): Promise<string> => {
 
     prCommentLicenses += '<ul dir="auto">\n';
     for (const pkg of licenses) {
-      core.info(`- License: ${pkg.PackageName} (${pkg.LicenseType})`);
       prCommentLicenses += `<li>${pkg.PackageName} (${pkg.LicenseType})</li>\n`;
     }
     prCommentLicenses += "</ul>\n";

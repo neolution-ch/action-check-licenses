@@ -14359,7 +14359,6 @@ const processNuget = (csprojFolders) => __awaiter(void 0, void 0, void 0, functi
         licenses.sort((a, b) => a.PackageName.localeCompare(b.PackageName));
         prCommentLicenses += '<ul dir="auto">\n';
         for (const pkg of licenses) {
-            core.info(`- License: ${pkg.PackageName} (${pkg.LicenseType})`);
             prCommentLicenses += `<li>${pkg.PackageName} (${pkg.LicenseType})</li>\n`;
         }
         prCommentLicenses += "</ul>\n";

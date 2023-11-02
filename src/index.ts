@@ -45,6 +45,7 @@ async function run(): Promise<void> {
     let prComment = `## License Report\n\n`;
     prComment += textForComment;
     await prcomment.writePullRequestComment(prComment, pullRequestNumber);
+
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error);
