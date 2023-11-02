@@ -14354,16 +14354,18 @@ const processNuget = (projectPath, pullRequestNumber) => __awaiter(void 0, void 
     let prComment = `## Nuget License Report: ${projectPath}\n\n`;
     let prCommentLicenses = "";
     const licenses = JSON.parse(licenseReport);
+    // sort by name
+    licenses.sort((a, b) => a.PackageName.localeCompare(b.PackageName));
     prCommentLicenses += '<ul dir="auto">\n';
     for (let pkg of licenses) {
         core.info(`- License: ${pkg.PackageName} (${pkg.LicenseType})`);
         prCommentLicenses += `<li>${pkg.PackageName} (${pkg.LicenseType})</li>\n`;
     }
     prCommentLicenses += "</ul>\n";
-    const blockedLicenseNames = licenses
+    // use set to get distinct
+    const blockedLicenseNames = Array.from(new Set(licenses
         .filter((license) => blockedLicenses.includes(license.LicenseType))
-        .map((license) => license.LicenseType)
-        .join(", ");
+        .map((license) => license.LicenseType))).join(", ");
     if (blockedLicenseNames) {
         prComment += "<details open>\n";
         prComment += `<summary>:warning: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;

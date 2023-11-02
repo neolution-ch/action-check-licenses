@@ -44,6 +44,9 @@ const processNuget = async (projectPath: string, pullRequestNumber: number): Pro
   let prCommentLicenses = "";
   const licenses: Package[] = JSON.parse(licenseReport);
 
+  // sort by name
+  licenses.sort((a, b) => a.PackageName.localeCompare(b.PackageName));
+
   prCommentLicenses += '<ul dir="auto">\n';
   for (let pkg of licenses) {
     core.info(`- License: ${pkg.PackageName} (${pkg.LicenseType})`);
@@ -51,10 +54,14 @@ const processNuget = async (projectPath: string, pullRequestNumber: number): Pro
   }
   prCommentLicenses += "</ul>\n";
 
-  const blockedLicenseNames = licenses
-    .filter((license) => blockedLicenses.includes(license.LicenseType))
-    .map((license) => license.LicenseType)
-    .join(", ");
+  // use set to get distinct
+  const blockedLicenseNames = Array.from(
+    new Set(
+      licenses
+        .filter((license) => blockedLicenses.includes(license.LicenseType))
+        .map((license) => license.LicenseType)
+    )
+  ).join(", ");
 
   if (blockedLicenseNames) {
     prComment += "<details open>\n";
