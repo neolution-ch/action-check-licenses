@@ -1,6 +1,7 @@
 import * as core from "@actions/core";
 import * as fs from "fs";
 import * as path from "path";
+import { minimatch } from "minimatch";
 
 /**
  * find packages in subfolders that contain a package.json
@@ -17,7 +18,7 @@ async function findPackageJsonFolders(currentPath: string, ignoreFolders: string
         continue;
       }
 
-      if (ignoreFolders.some((folder) => dirent.name.startsWith(folder))) {
+      if (ignoreFolders.some((folder) => minimatch(dirent.name, folder))) {
         core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
         continue;
       }
@@ -53,7 +54,7 @@ async function findCsProjectFolders(currentPath: string, ignoreFolders: string[]
         continue;
       }
 
-      if (ignoreFolders.some((folder) => dirent.name.startsWith(folder))) {
+      if (ignoreFolders.some((folder) => minimatch(dirent.name, folder))) {
         core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
         continue;
       }
