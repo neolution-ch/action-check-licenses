@@ -14348,46 +14348,40 @@ const processNuget = (projectPath, pullRequestNumber) => __awaiter(void 0, void 
         toolInstalled = true;
     }
     yield exec.exec("dotnet-project-licenses", ["-i", `${projectPath}`, "-o", "-j", "--outfile", "dotnetlicenses.json"], { silent: false });
-    const licenseReport = fs.readFileSync("dotnetlicenses.json", 'utf8');
+    const licenseReport = fs.readFileSync("dotnetlicenses.json", "utf8");
     // delete file
     fs.unlinkSync("dotnetlicenses.json");
-    core.info(`licenseReport: ${licenseReport}`);
-    return;
-    // if we found something, process it
-    if (true) {
-        let prComment = `## Nuget License Report: ${projectPath}\n\n`;
-        let prCommentLicenses = "";
-        const licenses = JSON.parse(licenseReport);
-        prCommentLicenses += '<ul dir="auto">\n';
-        licenses.forEach((license) => {
-            core.info(`- License: ${license.name} (${license.count})`);
-            prCommentLicenses += `<li>${license.name} (${license.count})</li>\n`;
-        });
-        prCommentLicenses += "</ul>\n";
-        const blockedLicenseNames = licenses
-            .filter((license) => blockedLicenses.includes(license.name))
-            .map((license) => license.name)
-            .join(", ");
-        if (blockedLicenseNames) {
-            prComment += "<details open>\n";
-            prComment += `<summary>:warning: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;
-            prComment += prCommentLicenses;
-            prComment += "</details>";
-        }
-        else {
-            prComment += "<details>\n";
-            prComment += "<summary>:white_check_mark: No problematic licenses found</summary>\n";
-            prComment += prCommentLicenses;
-            prComment += "</details>";
-        }
-        yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
-        core.info(`Finished processNuget for: ${projectPath}`);
-        if (!continueOnBlockedFound && blockedLicenseNames) {
-            core.info("Detected not allowed licenses (continueOnBlockedFound = false)");
-            throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
-        }
+    let prComment = `## Nuget License Report: ${projectPath}\n\n`;
+    let prCommentLicenses = "";
+    const licenses = JSON.parse(licenseReport);
+    prCommentLicenses += '<ul dir="auto">\n';
+    licenses.forEach((license) => {
+        core.info(`- License: ${license.packageName} (${license.licenseType})`);
+        prCommentLicenses += `<li>${license.packageName} (${license.licenseType})</li>\n`;
+    });
+    prCommentLicenses += "</ul>\n";
+    const blockedLicenseNames = licenses
+        .filter((license) => blockedLicenses.includes(license.licenseType))
+        .map((license) => license.licenseType)
+        .join(", ");
+    if (blockedLicenseNames) {
+        prComment += "<details open>\n";
+        prComment += `<summary>:warning: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;
+        prComment += prCommentLicenses;
+        prComment += "</details>";
     }
-    else {}
+    else {
+        prComment += "<details>\n";
+        prComment += "<summary>:white_check_mark: No problematic licenses found</summary>\n";
+        prComment += prCommentLicenses;
+        prComment += "</details>";
+    }
+    yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
+    core.info(`Finished processNuget for: ${projectPath}`);
+    if (!continueOnBlockedFound && blockedLicenseNames) {
+        core.info("Detected not allowed licenses (continueOnBlockedFound = false)");
+        throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
+    }
 });
 exports.processNuget = processNuget;
 

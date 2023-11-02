@@ -19,57 +19,48 @@ const processNuget = async (projectPath: string, pullRequestNumber: number): Pro
 
   await exec.exec("dotnet-project-licenses", ["-i", `${projectPath}`, "-o", "-j", "--outfile", "dotnetlicenses.json"], { silent: false });
 
-  const licenseReport = fs.readFileSync("dotnetlicenses.json", 'utf8');
+  const licenseReport = fs.readFileSync("dotnetlicenses.json", "utf8");
 
   // delete file
   fs.unlinkSync("dotnetlicenses.json");
 
-  core.info(`licenseReport: ${licenseReport}`);
+  let prComment = `## Nuget License Report: ${projectPath}\n\n`;
+  let prCommentLicenses = "";
+  const licenses = JSON.parse(licenseReport) as {
+    packageName: string;
+    licenseType: string;
+  }[];
 
-  return;
+  prCommentLicenses += '<ul dir="auto">\n';
+  licenses.forEach((license: { packageName: string; licenseType: string }) => {
+    core.info(`- License: ${license.packageName} (${license.licenseType})`);
+    prCommentLicenses += `<li>${license.packageName} (${license.licenseType})</li>\n`;
+  });
+  prCommentLicenses += "</ul>\n";
 
-  // if we found something, process it
-  if (true) {
-    let prComment = `## Nuget License Report: ${projectPath}\n\n`;
-    let prCommentLicenses = "";
-    const licenses = JSON.parse(licenseReport) as {
-      name: string;
-      count: number;
-    }[];
+  const blockedLicenseNames = licenses
+    .filter((license) => blockedLicenses.includes(license.licenseType))
+    .map((license) => license.licenseType)
+    .join(", ");
 
-    prCommentLicenses += '<ul dir="auto">\n';
-    licenses.forEach((license: { name: string; count: number }) => {
-      core.info(`- License: ${license.name} (${license.count})`);
-      prCommentLicenses += `<li>${license.name} (${license.count})</li>\n`;
-    });
-    prCommentLicenses += "</ul>\n";
-
-    const blockedLicenseNames = licenses
-      .filter((license) => blockedLicenses.includes(license.name))
-      .map((license) => license.name)
-      .join(", ");
-
-    if (blockedLicenseNames) {
-      prComment += "<details open>\n";
-      prComment += `<summary>:warning: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;
-      prComment += prCommentLicenses;
-      prComment += "</details>";
-    } else {
-      prComment += "<details>\n";
-      prComment += "<summary>:white_check_mark: No problematic licenses found</summary>\n";
-      prComment += prCommentLicenses;
-      prComment += "</details>";
-    }
-
-    await prcomment.writePullRequestComment(prComment, pullRequestNumber);
-    core.info(`Finished processNuget for: ${projectPath}`);
-
-    if (!continueOnBlockedFound && blockedLicenseNames) {
-      core.info("Detected not allowed licenses (continueOnBlockedFound = false)");
-      throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
-    }
+  if (blockedLicenseNames) {
+    prComment += "<details open>\n";
+    prComment += `<summary>:warning: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;
+    prComment += prCommentLicenses;
+    prComment += "</details>";
   } else {
-    core.error("Unable to extract license report");
+    prComment += "<details>\n";
+    prComment += "<summary>:white_check_mark: No problematic licenses found</summary>\n";
+    prComment += prCommentLicenses;
+    prComment += "</details>";
+  }
+
+  await prcomment.writePullRequestComment(prComment, pullRequestNumber);
+  core.info(`Finished processNuget for: ${projectPath}`);
+
+  if (!continueOnBlockedFound && blockedLicenseNames) {
+    core.info("Detected not allowed licenses (continueOnBlockedFound = false)");
+    throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
   }
 };
 
