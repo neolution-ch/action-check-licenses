@@ -1,6 +1,9 @@
 # action-check-licenses
 
-This action checks the licenses (npm and nuget) int he current repository and makes a comment about that
+This action checks the licenses (npm and nuget) int he current repository and makes a comment about that. It uses following 2 tools to check the licenses
+
+- NPM: https://github.com/tmorell/license-compliance
+- nuget: https://github.com/tomchavakis/nuget-license
 
 # Usage
 
