@@ -14337,11 +14337,15 @@ const exec = __importStar(__nccwpck_require__(1514));
 const prcomment = __importStar(__nccwpck_require__(7654));
 const blockedLicenses = core.getMultilineInput("blockedLicenses");
 const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
+let toolInstalled = false;
 const processNuget = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
     core.info(`Starting processNuget for: ${projectPath}`);
-    yield exec.exec("dotnet", ["tool", "install", "--global", "dotnet-project-licenses"], {
-        silent: false,
-    });
+    if (!toolInstalled) {
+        yield exec.exec("dotnet", ["tool", "install", "--global", "dotnet-project-licenses"], {
+            silent: false,
+        });
+        toolInstalled = true;
+    }
     const { stdout: licenseReport } = yield exec.getExecOutput("dotnet-project-licenses", ["-i", `${projectPath}`], { silent: false });
     return;
     // if we found something, process it

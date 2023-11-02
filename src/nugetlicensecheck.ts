@@ -4,19 +4,19 @@ import * as prcomment from "./prcomments";
 
 const blockedLicenses = core.getMultilineInput("blockedLicenses");
 const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
+let toolInstalled: boolean = false;
 
 const processNuget = async (projectPath: string, pullRequestNumber: number): Promise<void> => {
   core.info(`Starting processNuget for: ${projectPath}`);
 
-  await exec.exec("dotnet", ["tool", "install","--global","dotnet-project-licenses"], {
-    silent: false,
-  });
+  if (!toolInstalled) {
+    await exec.exec("dotnet", ["tool", "install", "--global", "dotnet-project-licenses"], {
+      silent: false,
+    });
+    toolInstalled = true;
+  }
 
-  const { stdout: licenseReport } = await exec.getExecOutput(
-    "dotnet-project-licenses",
-    ["-i", `${projectPath}`],
-    { silent: false },
-  );
+  const { stdout: licenseReport } = await exec.getExecOutput("dotnet-project-licenses", ["-i", `${projectPath}`], { silent: false });
 
   return;
 
