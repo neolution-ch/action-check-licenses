@@ -14169,10 +14169,7 @@ function run() {
             const csprojFolders = yield foldersearch.findCsProjectFolders("./", ignoreFolders);
             // process each folder
             for (const folder of csprojFolders) {
-                const currentFolder = process.cwd();
-                yield process.chdir(folder);
                 yield nugetlicensecheck.processNuget(folder, pullRequestNumber);
-                yield process.chdir(currentFolder);
             }
             return;
             // find all package.json folders

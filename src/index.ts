@@ -29,10 +29,7 @@ async function run(): Promise<void> {
 
     // process each folder
     for (const folder of csprojFolders) {
-      const currentFolder = process.cwd();
-      await process.chdir(folder);
       await nugetlicensecheck.processNuget(folder, pullRequestNumber);
-      await process.chdir(currentFolder);
     }
     return;
 
