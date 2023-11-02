@@ -63,12 +63,12 @@ const processNuget = async (csprojFolders: string[], pullRequestNumber: number):
 
     if (blockedLicenseNames) {
       prComment += "<details open>\n";
-      prComment += `<summary>:warning: **${projectPath}**: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;
+      prComment += `<summary>:warning: <b>${projectPath}</b>: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;
       prComment += prCommentLicenses;
       prComment += "</details>";
     } else {
       prComment += "<details>\n";
-      prComment += `<summary>:white_check_mark: **${projectPath}**: No problematic licenses found</summary>\n`;
+      prComment += `<summary>:white_check_mark: <b>${projectPath}</b>: No problematic licenses found</summary>\n`;
       prComment += prCommentLicenses;
       prComment += "</details>";
     }
