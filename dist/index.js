@@ -14335,6 +14335,7 @@ exports.processNuget = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const prcomment = __importStar(__nccwpck_require__(7654));
+const fs = __importStar(__nccwpck_require__(7147));
 const blockedLicenses = core.getMultilineInput("blockedLicenses");
 const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
 let toolInstalled = false;
@@ -14342,11 +14343,15 @@ const processNuget = (projectPath, pullRequestNumber) => __awaiter(void 0, void 
     core.info(`Starting processNuget for: ${projectPath}`);
     if (!toolInstalled) {
         yield exec.exec("dotnet", ["tool", "install", "--global", "dotnet-project-licenses"], {
-            silent: false,
+            silent: true,
         });
         toolInstalled = true;
     }
-    const { stdout: licenseReport } = yield exec.getExecOutput("dotnet-project-licenses", ["-i", `${projectPath}`], { silent: false });
+    yield exec.exec("dotnet-project-licenses", ["-i", `${projectPath}`, "-o", "-j", "--outfile", "dotnetlicenses.json"], { silent: false });
+    const licenseReport = fs.readFileSync("dotnetlicenses.json", 'utf8');
+    // delete file
+    fs.unlinkSync("dotnetlicenses.json");
+    core.info(`licenseReport: ${licenseReport}`);
     return;
     // if we found something, process it
     if (true) {

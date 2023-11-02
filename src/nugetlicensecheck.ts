@@ -1,6 +1,7 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as prcomment from "./prcomments";
+import * as fs from "fs";
 
 const blockedLicenses = core.getMultilineInput("blockedLicenses");
 const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
@@ -11,12 +12,19 @@ const processNuget = async (projectPath: string, pullRequestNumber: number): Pro
 
   if (!toolInstalled) {
     await exec.exec("dotnet", ["tool", "install", "--global", "dotnet-project-licenses"], {
-      silent: false,
+      silent: true,
     });
     toolInstalled = true;
   }
 
-  const { stdout: licenseReport } = await exec.getExecOutput("dotnet-project-licenses", ["-i", `${projectPath}`], { silent: false });
+  await exec.exec("dotnet-project-licenses", ["-i", `${projectPath}`, "-o", "-j", "--outfile", "dotnetlicenses.json"], { silent: false });
+
+  const licenseReport = fs.readFileSync("dotnetlicenses.json", 'utf8');
+
+  // delete file
+  fs.unlinkSync("dotnetlicenses.json");
+
+  core.info(`licenseReport: ${licenseReport}`);
 
   return;
 
