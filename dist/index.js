@@ -14168,20 +14168,20 @@ function run() {
             // find all *.csproj folders
             const csprojFolders = yield foldersearch.findCsProjectFolders("./", ignoreFolders);
             // process each folder
-            const textForComment = yield nugetlicensecheck.processNuget(csprojFolders);
-            let prComment = `## License Report\n\n`;
-            prComment += textForComment;
-            yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
-            return;
+            let textForComment = yield nugetlicensecheck.processNuget(csprojFolders);
             // find all package.json folders
             const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders);
             // process each folder
             for (const folder of packageJsonFolders) {
                 const currentFolder = process.cwd();
                 yield process.chdir(folder);
-                yield npmlicensecheck.processNpm(folder, pullRequestNumber);
+                textForComment += yield npmlicensecheck.processNpm(folder);
                 yield process.chdir(currentFolder);
             }
+            // create comment
+            let prComment = `## License Report\n\n`;
+            prComment += textForComment;
+            yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
         }
         catch (error) {
             if (error instanceof Error) {
@@ -14239,10 +14239,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.processNpm = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
-const prcomment = __importStar(__nccwpck_require__(7654));
 const blockedLicenses = core.getMultilineInput("blockedLicenses");
 const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
-const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
+const processNpm = (projectPath) => __awaiter(void 0, void 0, void 0, function* () {
     core.info(`Starting processNpm for: ${projectPath}`);
     yield exec.exec("yarn", [""], {
         silent: true,
@@ -14253,7 +14252,7 @@ const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0,
     const match = regex.exec(licenseReport);
     // if we found something, process it
     if (match) {
-        let prComment = `## NPM License Report: ${projectPath}\n\n`;
+        let prComment = ``;
         let prCommentLicenses = "";
         const licenses = JSON.parse(match[0]);
         prCommentLicenses += '<ul dir="auto">\n';
@@ -14268,25 +14267,26 @@ const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0,
             .join(", ");
         if (blockedLicenseNames) {
             prComment += "<details open>\n";
-            prComment += `<summary>:warning: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;
+            prComment += `<summary>:warning: <b>${projectPath}</b>: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;
             prComment += prCommentLicenses;
             prComment += "</details>";
         }
         else {
             prComment += "<details>\n";
-            prComment += "<summary>:white_check_mark: No problematic licenses found</summary>\n";
+            prComment += `<summary>:white_check_mark: <b>${projectPath}</b>: No problematic licenses found</summary>\n`;
             prComment += prCommentLicenses;
             prComment += "</details>";
         }
-        yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
         core.info(`Finished processNpm for: ${projectPath}`);
         if (!continueOnBlockedFound && blockedLicenseNames) {
             core.info("Detected not allowed licenses (continueOnBlockedFound = false)");
             throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
         }
+        return prComment;
     }
     else {
         core.error("Unable to extract license report");
+        return `${projectPath} Unable to extract license report`;
     }
 });
 exports.processNpm = processNpm;
