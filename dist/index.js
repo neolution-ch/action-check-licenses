@@ -14148,6 +14148,7 @@ const github = __importStar(__nccwpck_require__(5438));
 const foldersearch = __importStar(__nccwpck_require__(6795));
 const prcomment = __importStar(__nccwpck_require__(7654));
 const npmlicensecheck = __importStar(__nccwpck_require__(7893));
+const nugetlicensecheck = __importStar(__nccwpck_require__(4492));
 /**
  * The main entry point
  */
@@ -14170,8 +14171,7 @@ function run() {
             for (const folder of csprojFolders) {
                 const currentFolder = process.cwd();
                 yield process.chdir(folder);
-                //await npmlicensecheck.processNpm(folder, pullRequestNumber);
-                core.info("===> Processing folder: " + folder);
+                yield nugetlicensecheck.processNuget(folder, pullRequestNumber);
                 yield process.chdir(currentFolder);
             }
             return;
@@ -14292,6 +14292,98 @@ const processNpm = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0,
     }
 });
 exports.processNpm = processNpm;
+
+
+/***/ }),
+
+/***/ 4492:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.processNuget = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const exec = __importStar(__nccwpck_require__(1514));
+const prcomment = __importStar(__nccwpck_require__(7654));
+const blockedLicenses = core.getMultilineInput("blockedLicenses");
+const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
+const processNuget = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
+    core.info(`Starting processNuget for: ${projectPath}`);
+    yield exec.exec("dotnet", ["install", "--global", "dotnet-project-licenses"], {
+        silent: false,
+    });
+    const { stdout: licenseReport } = yield exec.getExecOutput("dotnet-project-licenses", ["-i", "${projectPath}"], { silent: false });
+    return;
+    // if we found something, process it
+    if (true) {
+        let prComment = `## Nuget License Report: ${projectPath}\n\n`;
+        let prCommentLicenses = "";
+        const licenses = JSON.parse(licenseReport);
+        prCommentLicenses += '<ul dir="auto">\n';
+        licenses.forEach((license) => {
+            core.info(`- License: ${license.name} (${license.count})`);
+            prCommentLicenses += `<li>${license.name} (${license.count})</li>\n`;
+        });
+        prCommentLicenses += "</ul>\n";
+        const blockedLicenseNames = licenses
+            .filter((license) => blockedLicenses.includes(license.name))
+            .map((license) => license.name)
+            .join(", ");
+        if (blockedLicenseNames) {
+            prComment += "<details open>\n";
+            prComment += `<summary>:warning: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;
+            prComment += prCommentLicenses;
+            prComment += "</details>";
+        }
+        else {
+            prComment += "<details>\n";
+            prComment += "<summary>:white_check_mark: No problematic licenses found</summary>\n";
+            prComment += prCommentLicenses;
+            prComment += "</details>";
+        }
+        yield prcomment.writePullRequestComment(prComment, pullRequestNumber);
+        core.info(`Finished processNuget for: ${projectPath}`);
+        if (!continueOnBlockedFound && blockedLicenseNames) {
+            core.info("Detected not allowed licenses (continueOnBlockedFound = false)");
+            throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
+        }
+    }
+    else {}
+});
+exports.processNuget = processNuget;
 
 
 /***/ }),

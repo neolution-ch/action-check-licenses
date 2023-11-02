@@ -3,6 +3,7 @@ import * as github from "@actions/github";
 import * as foldersearch from "./foldersearch";
 import * as prcomment from "./prcomments";
 import * as npmlicensecheck from "./npmlicensecheck";
+import * as nugetlicensecheck from "./nugetlicensecheck";
 
 /**
  * The main entry point
@@ -30,8 +31,7 @@ async function run(): Promise<void> {
     for (const folder of csprojFolders) {
       const currentFolder = process.cwd();
       await process.chdir(folder);
-      //await npmlicensecheck.processNpm(folder, pullRequestNumber);
-      core.info("===> Processing folder: " + folder);
+      await nugetlicensecheck.processNuget(folder, pullRequestNumber);
       await process.chdir(currentFolder);
     }
     return;
