@@ -14342,7 +14342,7 @@ const blockedLicenses = core.getMultilineInput("blockedLicenses");
 const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
 const processNuget = (projectPath, pullRequestNumber) => __awaiter(void 0, void 0, void 0, function* () {
     core.info(`Starting processNuget for: ${projectPath}`);
-    yield exec.exec("dotnet", ["install", "--global", "dotnet-project-licenses"], {
+    yield exec.exec("dotnet", ["tool", "install", "--global", "dotnet-project-licenses"], {
         silent: false,
     });
     const { stdout: licenseReport } = yield exec.getExecOutput("dotnet-project-licenses", ["-i", "${projectPath}"], { silent: false });

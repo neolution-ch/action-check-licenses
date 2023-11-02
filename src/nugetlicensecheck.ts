@@ -8,7 +8,7 @@ const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
 const processNuget = async (projectPath: string, pullRequestNumber: number): Promise<void> => {
   core.info(`Starting processNuget for: ${projectPath}`);
 
-  await exec.exec("dotnet", ["install","--global","dotnet-project-licenses"], {
+  await exec.exec("dotnet", ["tool", "install","--global","dotnet-project-licenses"], {
     silent: false,
   });
 
