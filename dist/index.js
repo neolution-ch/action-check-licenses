@@ -14032,7 +14032,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.findPackageJsonFolders = void 0;
+exports.findCsProjectFolders = exports.findPackageJsonFolders = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7147));
 const path = __importStar(__nccwpck_require__(1017));
@@ -14071,6 +14071,36 @@ function findPackageJsonFolders(currentPath, ignoreFolders) {
     });
 }
 exports.findPackageJsonFolders = findPackageJsonFolders;
+/**
+ * find folders that contain *.csproj files
+ * @param currentPath the path to start searching
+ * @param ignoreFolders folders to ignore
+ */
+function findCsProjectFolders(currentPath, ignoreFolders) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
+        const foundFolders = [];
+        for (const dirent of dirents) {
+            const fullPath = path.join(currentPath, dirent.name);
+            if (dirent.isDirectory()) {
+                if (fullPath.includes("node_modules") || dirent.name.startsWith(".")) {
+                    continue;
+                }
+                if (ignoreFolders.some((folder) => dirent.name.startsWith(folder))) {
+                    core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
+                    continue;
+                }
+                const files = fs.readdirSync(fullPath);
+                const csprojExists = files.some(file => file.endsWith('.csproj'));
+                if (csprojExists) {
+                    foundFolders.push(fullPath);
+                }
+            }
+        }
+        return foundFolders;
+    });
+}
+exports.findCsProjectFolders = findCsProjectFolders;
 
 
 /***/ }),
@@ -14134,6 +14164,17 @@ function run() {
             const pullRequestNumber = context.payload.pull_request.number;
             // remove old comments
             yield prcomment.removeOldPullRequestComments(pullRequestNumber);
+            // find all *.csproj folders
+            const csprojFolders = yield foldersearch.findCsProjectFolders("./", ignoreFolders);
+            // process each folder
+            for (const folder of csprojFolders) {
+                const currentFolder = process.cwd();
+                yield process.chdir(folder);
+                //await npmlicensecheck.processNpm(folder, pullRequestNumber);
+                core.info("===> Processing folder: " + folder);
+                yield process.chdir(currentFolder);
+            }
+            return;
             // find all package.json folders
             const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders);
             // process each folder

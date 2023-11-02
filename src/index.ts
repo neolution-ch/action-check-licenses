@@ -23,6 +23,19 @@ async function run(): Promise<void> {
     // remove old comments
     await prcomment.removeOldPullRequestComments(pullRequestNumber);
 
+    // find all *.csproj folders
+    const csprojFolders = await foldersearch.findCsProjectFolders("./", ignoreFolders);
+
+    // process each folder
+    for (const folder of csprojFolders) {
+      const currentFolder = process.cwd();
+      await process.chdir(folder);
+      //await npmlicensecheck.processNpm(folder, pullRequestNumber);
+      core.info("===> Processing folder: " + folder);
+      await process.chdir(currentFolder);
+    }
+    return;
+
     // find all package.json folders
     const packageJsonFolders = await foldersearch.findPackageJsonFolders("./", ignoreFolders);
 
