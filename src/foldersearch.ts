@@ -59,7 +59,7 @@ async function findCsProjectFolders(currentPath: string, ignoreFolders: string[]
       }
 
       const files = fs.readdirSync(fullPath);
-      const csprojExists = files.some(file => file.endsWith('.csproj'));
+      const csprojExists = files.some((file) => file.endsWith(".csproj"));
 
       if (csprojExists) {
         foundFolders.push(fullPath);
@@ -68,6 +68,5 @@ async function findCsProjectFolders(currentPath: string, ignoreFolders: string[]
   }
   return foundFolders;
 }
-
 
 export { findPackageJsonFolders, findCsProjectFolders };

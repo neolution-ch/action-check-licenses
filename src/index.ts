@@ -28,9 +28,7 @@ async function run(): Promise<void> {
     const csprojFolders = await foldersearch.findCsProjectFolders("./", ignoreFolders);
 
     // process each folder
-    for (const folder of csprojFolders) {
-      await nugetlicensecheck.processNuget(folder, pullRequestNumber);
-    }
+    await nugetlicensecheck.processNuget(csprojFolders, pullRequestNumber);
     return;
 
     // find all package.json folders
