@@ -23,10 +23,10 @@ const processNpm = async (projectPath: string): Promise<string> => {
     { silent: true },
   );
 
-  core.info(`licenseReport: ${licenseReportDetailed}`);
-  await core.summary.addHeading("NPM license Details for " + projectPath)
-                    .addCodeBlock(licenseReportDetailed, "text")
-                    .write();
+  await core.summary
+    .addHeading("NPM license Details for " + projectPath)
+    .addCodeBlock(licenseReportDetailed, "text")
+    .write();
 
   // take valid part of the report
   const regex = /\[[\s\S]*\]/;
