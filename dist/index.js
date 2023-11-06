@@ -14540,12 +14540,16 @@ const processNpm = (projectPath) => __awaiter(void 0, void 0, void 0, function* 
     });
     // create detailed report
     const { stdout: licenseReportDetailed } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "json", "--report", "detailed"], { silent: true });
-    const tableData = JSON.parse(licenseReportDetailed).map(({ name, license }) => [name, license]);
+    const tableData = JSON.parse(licenseReportDetailed).map(({ name, version, license, repository }) => {
+        const status = blockedLicenses.includes(license) ? ":warning:" : ":white_check_mark:";
+        return [status, name, version, license, repository];
+    });
     yield core.summary
         .addHeading("NPM license Details for " + projectPath)
         // .addCodeBlock(licenseReportDetailed, "text")
         .addTable([
         [
+            { data: "Status", header: true },
             { data: "Name", header: true },
             { data: "Version", header: true },
             { data: "License", header: true },

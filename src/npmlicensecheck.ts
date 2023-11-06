@@ -25,13 +25,17 @@ const processNpm = async (projectPath: string): Promise<string> => {
     { silent: true },
   );
 
-  const tableData = (JSON.parse(licenseReportDetailed) as PackageEntry[]).map(({ name, license }) => [name, license]);
+  const tableData = (JSON.parse(licenseReportDetailed) as PackageEntry[]).map(({ name, version, license, repository }) => {
+    const status = blockedLicenses.includes(license) ? ":warning:" : ":white_check_mark:";
+    return [status, name, version, license, repository];
+  });
 
   await core.summary
     .addHeading("NPM license Details for " + projectPath)
     // .addCodeBlock(licenseReportDetailed, "text")
     .addTable([
       [
+        { data: "Status", header: true },
         { data: "Name", header: true },
         { data: "Version", header: true },
         { data: "License", header: true },
