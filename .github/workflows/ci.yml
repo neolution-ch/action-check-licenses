@@ -115,4 +115,4 @@ jobs:
           blockedLicenses: |
             GPL
             GPL-2.0
-            MIT
+            ISC
