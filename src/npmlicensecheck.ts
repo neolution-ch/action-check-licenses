@@ -4,6 +4,13 @@ import * as exec from "@actions/exec";
 const blockedLicenses = core.getMultilineInput("blockedLicenses");
 const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
 
+interface PackageEntry {
+  name: string;
+  license: string;
+  repository: string;
+  version: string;
+}
+
 const processNpm = async (projectPath: string): Promise<string> => {
   core.info(`Starting processNpm for: ${projectPath}`);
 
@@ -23,9 +30,20 @@ const processNpm = async (projectPath: string): Promise<string> => {
     { silent: true },
   );
 
+  const tableData = (JSON.parse(licenseReportDetailed) as PackageEntry[]).map(({ name, license }) => [name, license]);
+
   await core.summary
     .addHeading("NPM license Details for " + projectPath)
-    .addCodeBlock(licenseReportDetailed, "text")
+    // .addCodeBlock(licenseReportDetailed, "text")
+    .addTable([
+      [
+        { data: "Name", header: true },
+        { data: "Version", header: true },
+        { data: "License", header: true },
+        { data: "Repository", header: true },
+      ],
+      ...tableData,
+    ])
     .write();
 
   // take valid part of the report
