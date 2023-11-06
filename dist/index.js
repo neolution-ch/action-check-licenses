@@ -14538,30 +14538,26 @@ const processNpm = (projectPath) => __awaiter(void 0, void 0, void 0, function* 
     yield exec.exec("yarn", [""], {
         silent: true,
     });
+    // create detailed report
+    const { stdout: licenseReportDetailed } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "json", "--report", "detailed"], { silent: true });
+    const tableData = JSON.parse(licenseReportDetailed).map(({ name, license }) => [name, license]);
+    yield core.summary
+        .addHeading("NPM license Details for " + projectPath)
+        // .addCodeBlock(licenseReportDetailed, "text")
+        .addTable([
+        [
+            { data: "Name", header: true },
+            { data: "Version", header: true },
+            { data: "License", header: true },
+            { data: "Repository", header: true },
+        ],
+        ...tableData,
+    ])
+        .write();
+    // create summary report for PR comment
     const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "json", "--report", "summary"], { silent: true });
-    const { stdout: licenseReportDetailed } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "text", "--report", "detailed"], { silent: true });
-    const regex = /\[[\s\S]*\]/;
-    const detailMatch = regex.exec(licenseReportDetailed);
-    if (detailMatch) {
-        const tableData = JSON.parse(detailMatch[0]).map(({ name, license }) => [name, license]);
-        yield core.summary
-            .addHeading("NPM license Details for " + projectPath)
-            // .addCodeBlock(licenseReportDetailed, "text")
-            .addTable([
-            [
-                { data: "Name", header: true },
-                { data: "Version", header: true },
-                { data: "License", header: true },
-                { data: "Repository", header: true },
-            ],
-            ...tableData,
-        ])
-            .write();
-    }
-    else {
-        core.info("Unable to extract license report detailed");
-    }
     // take valid part of the report
+    const regex = /\[[\s\S]*\]/;
     const match = regex.exec(licenseReport);
     // if we found something, process it
     if (match) {
