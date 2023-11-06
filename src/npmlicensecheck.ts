@@ -23,7 +23,8 @@ const processNpm = async (projectPath: string): Promise<string> => {
     { silent: true },
   );
 
-  core.exportVariable("GITHUB_STEP_SUMMARY", licenseReportDetailed);
+  await core.summary.addHeading("NPM license Details for " + projectPath)
+                    .addCodeBlock(licenseReportDetailed, "text");
 
   // take valid part of the report
   const regex = /\[[\s\S]*\]/;
