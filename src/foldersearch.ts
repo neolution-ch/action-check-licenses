@@ -7,10 +7,22 @@ import { minimatch } from "minimatch";
  * find packages in subfolders that contain a package.json
  * @param currentPath the path to start searching
  * @param ignoreFolders folders to ignore
+ * @param checkRootFolder if true, the root folder is also checked
  */
-async function findPackageJsonFolders(currentPath: string, ignoreFolders: string[]): Promise<string[]> {
+async function findPackageJsonFolders(currentPath: string, ignoreFolders: string[], checkRootFolder: boolean): Promise<string[]> {
   const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
   const foundFolders: string[] = [];
+
+  if (checkRootFolder) {
+    const packageRootJsonPath = path.join(currentPath, "package.json");
+    try {
+      fs.accessSync(packageRootJsonPath);
+      foundFolders.push(currentPath);
+    } catch (error) {
+      // no package.json in root folder
+    }
+  }
+
   for (const dirent of dirents) {
     const fullPath = path.join(currentPath, dirent.name);
     if (dirent.isDirectory()) {

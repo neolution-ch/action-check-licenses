@@ -14321,11 +14321,22 @@ const minimatch_1 = __nccwpck_require__(1953);
  * find packages in subfolders that contain a package.json
  * @param currentPath the path to start searching
  * @param ignoreFolders folders to ignore
+ * @param checkRootFolder if true, the root folder is also checked
  */
-function findPackageJsonFolders(currentPath, ignoreFolders) {
+function findPackageJsonFolders(currentPath, ignoreFolders, checkRootFolder) {
     return __awaiter(this, void 0, void 0, function* () {
         const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
         const foundFolders = [];
+        if (checkRootFolder) {
+            const packageRootJsonPath = path.join(currentPath, "package.json");
+            try {
+                fs.accessSync(packageRootJsonPath);
+                foundFolders.push(currentPath);
+            }
+            catch (error) {
+                // no package.json in root folder
+            }
+        }
         for (const dirent of dirents) {
             const fullPath = path.join(currentPath, dirent.name);
             if (dirent.isDirectory()) {
@@ -14451,7 +14462,7 @@ function run() {
             // process each folder
             let textForComment = yield nugetlicensecheck.processNuget(csprojFolders);
             // find all package.json folders
-            const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders);
+            const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders, true);
             // process each folder
             for (const folder of packageJsonFolders) {
                 const currentFolder = process.cwd();
@@ -14527,6 +14538,27 @@ const processNpm = (projectPath) => __awaiter(void 0, void 0, void 0, function* 
     yield exec.exec("yarn", [""], {
         silent: true,
     });
+    // create detailed report
+    const { stdout: licenseReportDetailed } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "json", "--report", "detailed"], { silent: true });
+    const tableData = JSON.parse(licenseReportDetailed).map(({ name, version, license, repository }) => {
+        const status = blockedLicenses.includes(license) ? ":warning:" : ":white_check_mark:";
+        return [status, name, version, license, repository];
+    });
+    yield core.summary
+        .addHeading("NPM license Details for " + projectPath)
+        // .addCodeBlock(licenseReportDetailed, "text")
+        .addTable([
+        [
+            { data: "Status", header: true },
+            { data: "Name", header: true },
+            { data: "Version", header: true },
+            { data: "License", header: true },
+            { data: "Repository", header: true },
+        ],
+        ...tableData,
+    ])
+        .write();
+    // create summary report for PR comment
     const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "json", "--report", "summary"], { silent: true });
     // take valid part of the report
     const regex = /\[[\s\S]*\]/;
