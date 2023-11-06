@@ -14540,8 +14540,10 @@ const processNpm = (projectPath) => __awaiter(void 0, void 0, void 0, function* 
     });
     const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "json", "--report", "summary"], { silent: true });
     const { stdout: licenseReportDetailed } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "text", "--report", "detailed"], { silent: true });
+    core.info(`licenseReport: ${licenseReportDetailed}`);
     yield core.summary.addHeading("NPM license Details for " + projectPath)
-        .addCodeBlock(licenseReportDetailed, "text");
+        .addCodeBlock(licenseReportDetailed, "text")
+        .write();
     // take valid part of the report
     const regex = /\[[\s\S]*\]/;
     const match = regex.exec(licenseReport);
