@@ -17,6 +17,14 @@ const processNpm = async (projectPath: string): Promise<string> => {
     { silent: true },
   );
 
+  const { stdout: licenseReportDetailed } = await exec.getExecOutput(
+    "npx",
+    ["license-compliance@2", "--production", "--format", "text", "--report", "detailed"],
+    { silent: true },
+  );
+
+  core.exportVariable("GITHUB_STEP_SUMMARY", licenseReportDetailed);
+
   // take valid part of the report
   const regex = /\[[\s\S]*\]/;
   const match = regex.exec(licenseReport);

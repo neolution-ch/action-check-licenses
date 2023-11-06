@@ -14321,11 +14321,22 @@ const minimatch_1 = __nccwpck_require__(1953);
  * find packages in subfolders that contain a package.json
  * @param currentPath the path to start searching
  * @param ignoreFolders folders to ignore
+ * @param checkRootFolder if true, the root folder is also checked
  */
-function findPackageJsonFolders(currentPath, ignoreFolders) {
+function findPackageJsonFolders(currentPath, ignoreFolders, checkRootFolder) {
     return __awaiter(this, void 0, void 0, function* () {
         const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
         const foundFolders = [];
+        if (checkRootFolder) {
+            const packageRootJsonPath = path.join(currentPath, "package.json");
+            try {
+                fs.accessSync(packageRootJsonPath);
+                foundFolders.push(currentPath);
+            }
+            catch (error) {
+                // no package.json in root folder
+            }
+        }
         for (const dirent of dirents) {
             const fullPath = path.join(currentPath, dirent.name);
             if (dirent.isDirectory()) {
@@ -14451,7 +14462,7 @@ function run() {
             // process each folder
             let textForComment = yield nugetlicensecheck.processNuget(csprojFolders);
             // find all package.json folders
-            const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders);
+            const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders, true);
             // process each folder
             for (const folder of packageJsonFolders) {
                 const currentFolder = process.cwd();
@@ -14528,6 +14539,8 @@ const processNpm = (projectPath) => __awaiter(void 0, void 0, void 0, function* 
         silent: true,
     });
     const { stdout: licenseReport } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "json", "--report", "summary"], { silent: true });
+    const { stdout: licenseReportDetailed } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "text", "--report", "detailed"], { silent: true });
+    core.exportVariable("GITHUB_STEP_SUMMARY", licenseReportDetailed);
     // take valid part of the report
     const regex = /\[[\s\S]*\]/;
     const match = regex.exec(licenseReport);

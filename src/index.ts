@@ -31,7 +31,7 @@ async function run(): Promise<void> {
     let textForComment = await nugetlicensecheck.processNuget(csprojFolders);
 
     // find all package.json folders
-    const packageJsonFolders = await foldersearch.findPackageJsonFolders("./", ignoreFolders);
+    const packageJsonFolders = await foldersearch.findPackageJsonFolders("./", ignoreFolders, true);
 
     // process each folder
     for (const folder of packageJsonFolders) {
