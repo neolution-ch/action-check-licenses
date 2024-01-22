@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### dependabot: \#25 Bump the github-actions group with 1 update
+
 ### Updated
 
 - Updated readme to show correct version usage with @v0
