@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### dependabot: \#26 Bump ip from 1.1.8 to 1.1.9
+
 ### Updated
 
 - Updated readme to show correct version usage with @v0
