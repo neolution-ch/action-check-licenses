@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Updated
+### Changed
 
+- Updated the `action.yml` to run the action on node 20 instead of 16.
 - Updated readme to show correct version usage with @v0
 
 ## [0.4.0] - 2023-11-06
