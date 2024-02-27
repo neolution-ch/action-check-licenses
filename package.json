@@ -1,6 +1,6 @@
 {
   "name": "@neolution-ch/action-check-licenses",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "This action checks the repo for the npm and nuget licenses and adds a comment to the pull request",
   "homepage": "https://github.com/neolution-ch/action-check-licenses",
   "license": "MIT",
