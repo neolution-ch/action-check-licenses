@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### dependabot: \#30 Bump tar from 6.2.0 to 6.2.1
+
 ## [0.5.0] - 2024-02-27
 
 ### Changed
