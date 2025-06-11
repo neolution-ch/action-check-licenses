@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import * as fs from "fs";
-import * as path from "path";
+import path from "path";
 import { minimatch } from "minimatch";
 
 /**
@@ -8,8 +8,9 @@ import { minimatch } from "minimatch";
  * @param currentPath the path to start searching
  * @param ignoreFolders folders to ignore
  * @param checkRootFolder if true, the root folder is also checked
+ * @returns an array of paths to folders that contain a package.json file
  */
-async function findPackageJsonFolders(currentPath: string, ignoreFolders: string[], checkRootFolder: boolean): Promise<string[]> {
+function findPackageJsonFolders(currentPath: string, ignoreFolders: string[], checkRootFolder: boolean): string[] {
   const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
   const foundFolders: string[] = [];
 
@@ -18,7 +19,7 @@ async function findPackageJsonFolders(currentPath: string, ignoreFolders: string
     try {
       fs.accessSync(packageRootJsonPath);
       foundFolders.push(currentPath);
-    } catch (error) {
+    } catch {
       // no package.json in root folder
     }
   }
@@ -36,11 +37,11 @@ async function findPackageJsonFolders(currentPath: string, ignoreFolders: string
       }
 
       let packageJsonPath = path.join(fullPath, "package.json");
-      packageJsonPath = await path.resolve(packageJsonPath);
+      packageJsonPath = path.resolve(packageJsonPath);
 
       try {
         fs.accessSync(packageJsonPath);
-      } catch (error) {
+      } catch {
         // package.json does not exist in the directory
         continue;
       }
@@ -55,8 +56,9 @@ async function findPackageJsonFolders(currentPath: string, ignoreFolders: string
  * find folders that contain *.csproj files
  * @param currentPath the path to start searching
  * @param ignoreFolders folders to ignore
+ * @returns an array of paths to folders that contain a *.csproj file
  */
-async function findCsProjectFolders(currentPath: string, ignoreFolders: string[]): Promise<string[]> {
+function findCsProjectFolders(currentPath: string, ignoreFolders: string[]): string[] {
   const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
   const foundFolders: string[] = [];
   for (const dirent of dirents) {

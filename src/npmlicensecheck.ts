@@ -36,7 +36,7 @@ const processNpm = async (projectPath: string): Promise<string> => {
   });
 
   await core.summary
-    .addHeading("NPM license Details for " + projectPath)
+    .addHeading(`NPM license Details for ${projectPath}`)
     // .addCodeBlock(licenseReportDetailed, "text")
     .addTable([
       [
@@ -71,10 +71,10 @@ const processNpm = async (projectPath: string): Promise<string> => {
     }[];
 
     prCommentLicenses += '<ul dir="auto">\n';
-    licenses.forEach((license: { name: string; count: number }) => {
+    for (const license of licenses) {
       core.info(`- License: ${license.name} (${license.count})`);
       prCommentLicenses += `<li>${license.name} (${license.count})</li>\n`;
-    });
+    }
     prCommentLicenses += "</ul>\n";
 
     const blockedLicenseNames = licenses
