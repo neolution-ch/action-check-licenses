@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### dependabot: \#34 Bump braces from 3.0.2 to 3.0.3
+
 ## [0.6.0] - 2025-06-11
 
 ### Changed
