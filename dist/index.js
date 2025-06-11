@@ -14302,95 +14302,87 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.findCsProjectFolders = exports.findPackageJsonFolders = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7147));
-const path = __importStar(__nccwpck_require__(1017));
+const path_1 = __importDefault(__nccwpck_require__(1017));
 const minimatch_1 = __nccwpck_require__(1953);
 /**
  * find packages in subfolders that contain a package.json
  * @param currentPath the path to start searching
  * @param ignoreFolders folders to ignore
  * @param checkRootFolder if true, the root folder is also checked
+ * @returns an array of paths to folders that contain a package.json file
  */
 function findPackageJsonFolders(currentPath, ignoreFolders, checkRootFolder) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
-        const foundFolders = [];
-        if (checkRootFolder) {
-            const packageRootJsonPath = path.join(currentPath, "package.json");
+    const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
+    const foundFolders = [];
+    if (checkRootFolder) {
+        const packageRootJsonPath = path_1.default.join(currentPath, "package.json");
+        try {
+            fs.accessSync(packageRootJsonPath);
+            foundFolders.push(currentPath);
+        }
+        catch (_a) {
+            // no package.json in root folder
+        }
+    }
+    for (const dirent of dirents) {
+        const fullPath = path_1.default.join(currentPath, dirent.name);
+        if (dirent.isDirectory()) {
+            if (fullPath.includes("node_modules") || dirent.name.startsWith(".")) {
+                continue;
+            }
+            if (ignoreFolders.some((folder) => (0, minimatch_1.minimatch)(dirent.name, folder))) {
+                core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
+                continue;
+            }
+            let packageJsonPath = path_1.default.join(fullPath, "package.json");
+            packageJsonPath = path_1.default.resolve(packageJsonPath);
             try {
-                fs.accessSync(packageRootJsonPath);
-                foundFolders.push(currentPath);
+                fs.accessSync(packageJsonPath);
             }
-            catch (error) {
-                // no package.json in root folder
+            catch (_b) {
+                // package.json does not exist in the directory
+                continue;
             }
+            foundFolders.push(fullPath);
         }
-        for (const dirent of dirents) {
-            const fullPath = path.join(currentPath, dirent.name);
-            if (dirent.isDirectory()) {
-                if (fullPath.includes("node_modules") || dirent.name.startsWith(".")) {
-                    continue;
-                }
-                if (ignoreFolders.some((folder) => (0, minimatch_1.minimatch)(dirent.name, folder))) {
-                    core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
-                    continue;
-                }
-                let packageJsonPath = path.join(fullPath, "package.json");
-                packageJsonPath = yield path.resolve(packageJsonPath);
-                try {
-                    fs.accessSync(packageJsonPath);
-                }
-                catch (error) {
-                    // package.json does not exist in the directory
-                    continue;
-                }
-                foundFolders.push(fullPath);
-            }
-        }
-        return foundFolders;
-    });
+    }
+    return foundFolders;
 }
 exports.findPackageJsonFolders = findPackageJsonFolders;
 /**
  * find folders that contain *.csproj files
  * @param currentPath the path to start searching
  * @param ignoreFolders folders to ignore
+ * @returns an array of paths to folders that contain a *.csproj file
  */
 function findCsProjectFolders(currentPath, ignoreFolders) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
-        const foundFolders = [];
-        for (const dirent of dirents) {
-            const fullPath = path.join(currentPath, dirent.name);
-            if (dirent.isDirectory()) {
-                if (fullPath.includes("node_modules") || dirent.name.startsWith(".")) {
-                    continue;
-                }
-                if (ignoreFolders.some((folder) => (0, minimatch_1.minimatch)(dirent.name, folder))) {
-                    core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
-                    continue;
-                }
-                const files = fs.readdirSync(fullPath);
-                const csprojExists = files.some((file) => file.endsWith(".csproj"));
-                if (csprojExists) {
-                    foundFolders.push(fullPath);
-                }
+    const dirents = fs.readdirSync(currentPath, { withFileTypes: true });
+    const foundFolders = [];
+    for (const dirent of dirents) {
+        const fullPath = path_1.default.join(currentPath, dirent.name);
+        if (dirent.isDirectory()) {
+            if (fullPath.includes("node_modules") || dirent.name.startsWith(".")) {
+                continue;
+            }
+            if (ignoreFolders.some((folder) => (0, minimatch_1.minimatch)(dirent.name, folder))) {
+                core.info(`Skipping folder: ${fullPath} due ignoreFolders setting`);
+                continue;
+            }
+            const files = fs.readdirSync(fullPath);
+            const csprojExists = files.some((file) => file.endsWith(".csproj"));
+            if (csprojExists) {
+                foundFolders.push(fullPath);
             }
         }
-        return foundFolders;
-    });
+    }
+    return foundFolders;
 }
 exports.findCsProjectFolders = findCsProjectFolders;
 
@@ -14458,17 +14450,17 @@ function run() {
             // remove old comments
             yield prcomment.removeOldPullRequestComments(pullRequestNumber);
             // find all *.csproj folders
-            const csprojFolders = yield foldersearch.findCsProjectFolders("./", ignoreFolders);
+            const csprojFolders = foldersearch.findCsProjectFolders("./", ignoreFolders);
             // process each folder
             let textForComment = yield nugetlicensecheck.processNuget(csprojFolders);
             // find all package.json folders
-            const packageJsonFolders = yield foldersearch.findPackageJsonFolders("./", ignoreFolders, true);
+            const packageJsonFolders = foldersearch.findPackageJsonFolders("./", ignoreFolders, true);
             // process each folder
             for (const folder of packageJsonFolders) {
                 const currentFolder = process.cwd();
-                yield process.chdir(folder);
+                process.chdir(folder);
                 textForComment += yield npmlicensecheck.processNpm(folder);
-                yield process.chdir(currentFolder);
+                process.chdir(currentFolder);
             }
             // create comment
             let prComment = `## License Report\n\n`;
@@ -14485,6 +14477,7 @@ function run() {
         }
     });
 }
+// eslint-disable-next-line @typescript-eslint/no-floating-promises, unicorn/prefer-top-level-await
 run();
 
 
@@ -14551,7 +14544,7 @@ const processNpm = (projectPath) => __awaiter(void 0, void 0, void 0, function* 
         return [status, name, version, license, repository];
     });
     yield core.summary
-        .addHeading("NPM license Details for " + projectPath)
+        .addHeading(`NPM license Details for ${projectPath}`)
         // .addCodeBlock(licenseReportDetailed, "text")
         .addTable([
         [
@@ -14575,10 +14568,10 @@ const processNpm = (projectPath) => __awaiter(void 0, void 0, void 0, function* 
         let prCommentLicenses = "";
         const licenses = JSON.parse(match[0]);
         prCommentLicenses += '<ul dir="auto">\n';
-        licenses.forEach((license) => {
+        for (const license of licenses) {
             core.info(`- License: ${license.name} (${license.count})`);
             prCommentLicenses += `<li>${license.name} (${license.count})</li>\n`;
-        });
+        }
         prCommentLicenses += "</ul>\n";
         const blockedLicenseNames = licenses
             .filter((license) => blockedLicenses.includes(license.name))
@@ -14682,7 +14675,9 @@ const processNuget = (csprojFolders) => __awaiter(void 0, void 0, void 0, functi
         }
         prCommentLicenses += "</ul>\n";
         // use set to get distinct
-        const blockedLicenseNames = Array.from(new Set(licenses.filter((license) => blockedLicenses.includes(license.LicenseType)).map((license) => license.LicenseType))).join(", ");
+        const blockedLicenseNames = [
+            ...new Set(licenses.filter((license) => blockedLicenses.includes(license.LicenseType)).map((license) => license.LicenseType)),
+        ].join(", ");
         if (blockedLicenseNames) {
             prComment += "<details open>\n";
             prComment += `<summary>:warning: <b>${projectPath}</b>: Blocked licenses found: ${blockedLicenseNames}</summary>\n`;

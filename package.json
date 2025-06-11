@@ -10,7 +10,7 @@
   "scripts": {
     "build": "ncc build src/index.ts --license licenses.txt -o dist && shx sed -i \"s/\\x0D$//g\" ./dist/index.js",
     "prelint1": "git ls-files | xargs eclint check",
-    "lint": "eslint \"**/*.{ts,tsx}\" --cache --max-warnings 0",
+    "lint": "eslint --cache --max-warnings 0",
     "prettier-check": "prettier --check .",
     "prettier-write": "prettier --write .",
     "upgradeAll": "npm-check-updates --packageFile ./package.json -u"
@@ -23,18 +23,15 @@
     "@actions/core": "^1.10.1",
     "@actions/exec": "^1.1.1",
     "@actions/github": "^5.1.1",
-    "@typescript-eslint/eslint-plugin": "^6.8.0",
-    "@typescript-eslint/parser": "^6.8.0",
-    "eslint-config-prettier": "^9.0.0",
     "minimatch": "^9.0.3"
   },
   "devDependencies": {
-    "@neolution-ch/eslint-config-neolution": "^1.3.0",
+    "@neolution-ch/eslint-config-neolution": "^2.1.0",
     "@release-it/keep-a-changelog": "^4.0.0",
     "@types/node": "^20.6.5",
     "@vercel/ncc": "^0.38.0",
     "eclint": "^2.8.1",
-    "eslint": "^8.50.0",
+    "eslint": "^9.28.0",
     "npm-check-updates": "^16.14.4",
     "prettier": "^3.0.3",
     "release-it": "^16.2.1",

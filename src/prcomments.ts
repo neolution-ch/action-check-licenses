@@ -13,7 +13,7 @@ const writePullRequestComment = async (comment: string, pullRequestNumber: numbe
   await octokit.rest.issues
     .createComment({
       ...context.repo,
-      issue_number: pullRequestNumber, // eslint-disable-line @typescript-eslint/naming-convention
+      issue_number: pullRequestNumber,
       body: finalcomment,
     })
     .catch((error: unknown) => {

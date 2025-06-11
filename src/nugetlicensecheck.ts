@@ -43,7 +43,7 @@ const processNuget = async (csprojFolders: string[]): Promise<string> => {
     fs.unlinkSync("dotnetlicenses.json");
 
     let prCommentLicenses = "";
-    const licenses: Package[] = JSON.parse(licenseReport);
+    const licenses = JSON.parse(licenseReport) as Package[];
 
     // sort by name
     licenses.sort((a, b) => a.PackageName.localeCompare(b.PackageName));
@@ -55,9 +55,9 @@ const processNuget = async (csprojFolders: string[]): Promise<string> => {
     prCommentLicenses += "</ul>\n";
 
     // use set to get distinct
-    const blockedLicenseNames = Array.from(
-      new Set(licenses.filter((license) => blockedLicenses.includes(license.LicenseType)).map((license) => license.LicenseType)),
-    ).join(", ");
+    const blockedLicenseNames = [
+      ...new Set(licenses.filter((license) => blockedLicenses.includes(license.LicenseType)).map((license) => license.LicenseType)),
+    ].join(", ");
 
     if (blockedLicenseNames) {
       prComment += "<details open>\n";

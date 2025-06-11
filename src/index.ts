@@ -25,20 +25,20 @@ async function run(): Promise<void> {
     await prcomment.removeOldPullRequestComments(pullRequestNumber);
 
     // find all *.csproj folders
-    const csprojFolders = await foldersearch.findCsProjectFolders("./", ignoreFolders);
+    const csprojFolders = foldersearch.findCsProjectFolders("./", ignoreFolders);
 
     // process each folder
     let textForComment = await nugetlicensecheck.processNuget(csprojFolders);
 
     // find all package.json folders
-    const packageJsonFolders = await foldersearch.findPackageJsonFolders("./", ignoreFolders, true);
+    const packageJsonFolders = foldersearch.findPackageJsonFolders("./", ignoreFolders, true);
 
     // process each folder
     for (const folder of packageJsonFolders) {
       const currentFolder = process.cwd();
-      await process.chdir(folder);
+      process.chdir(folder);
       textForComment += await npmlicensecheck.processNpm(folder);
-      await process.chdir(currentFolder);
+      process.chdir(currentFolder);
     }
 
     // create comment
@@ -54,4 +54,5 @@ async function run(): Promise<void> {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises, unicorn/prefer-top-level-await
 run();
