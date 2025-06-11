@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated the `yarn` install command to ignore engines with the `--ignore-engines` flag.
+- Updated the `yarn` install command to log errors if there are any issues with the installation.
+
 ## [0.5.0] - 2024-02-27
 
 ### Changed

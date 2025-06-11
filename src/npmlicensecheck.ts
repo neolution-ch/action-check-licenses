@@ -14,9 +14,14 @@ interface PackageEntry {
 const processNpm = async (projectPath: string): Promise<string> => {
   core.info(`Starting processNpm for: ${projectPath}`);
 
-  await exec.exec("yarn", [""], {
-    silent: true,
-  });
+  try {
+    await exec.exec("yarn", ["--ignore-engines"], {
+      silent: true,
+    });
+  } catch (error) {
+    core.error(`Error running yarn: ${error}`);
+    throw error;
+  }
 
   // create detailed report
   const { stdout: licenseReportDetailed } = await exec.getExecOutput(
