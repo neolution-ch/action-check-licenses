@@ -14535,9 +14535,15 @@ const blockedLicenses = core.getMultilineInput("blockedLicenses");
 const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
 const processNpm = (projectPath) => __awaiter(void 0, void 0, void 0, function* () {
     core.info(`Starting processNpm for: ${projectPath}`);
-    yield exec.exec("yarn", [""], {
-        silent: true,
-    });
+    try {
+        yield exec.exec("yarn", ["--ignore-engines"], {
+            silent: true,
+        });
+    }
+    catch (error) {
+        core.error(`Error running yarn: ${error}`);
+        throw error;
+    }
     // create detailed report
     const { stdout: licenseReportDetailed } = yield exec.getExecOutput("npx", ["license-compliance@2", "--production", "--format", "json", "--report", "detailed"], { silent: true });
     const tableData = JSON.parse(licenseReportDetailed).map(({ name, version, license, repository }) => {
