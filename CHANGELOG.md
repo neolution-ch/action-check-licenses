@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### dependabot: \#33 Bump tj-actions/changed-files from 40 to 46 in /.github/workflows
+
 ## [0.6.0] - 2025-06-11
 
 ### Changed
