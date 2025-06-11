@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### dependabot: \#35 Bump micromatch from 4.0.5 to 4.0.8
+
 ## [0.6.0] - 2025-06-11
 
 ### Changed
