@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated the `yarn` install command to ignore engines with the `--ignore-engines` flag.
 - Updated the `yarn` install command to log errors if there are any issues with the installation.
+- Updated to `eslint` 9 and flat config.
 
 ## [0.5.0] - 2024-02-27
 
