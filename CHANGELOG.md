@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### dependabot: \#39 Bump minimatch from 9.0.3 to 10.2.1
+
 ## [0.6.0] - 2025-06-11
 
 ### Changed
