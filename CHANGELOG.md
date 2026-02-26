@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### dependabot: \#41 Bump basic-ftp from 5.0.3 to 5.2.0
+
 ## [0.6.0] - 2025-06-11
 
 ### Changed
