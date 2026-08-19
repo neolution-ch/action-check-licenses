@@ -74,7 +74,12 @@ for (const testCase of CASES) {
   }
   const plan = buildInstallPlan(prepared.info, true);
 
-  const install = run(plan.command, plan.args, dir, plan.env);
+  // Yarn berry turns on immutable installs in CI, and these fixtures are generated fresh with no
+  // committed lockfile, so berry would refuse to write one. A real berry repository commits its
+  // lockfile, which is why the action deliberately does not override this itself.
+  const fixtureEnv = prepared.info.berry ? { ...plan.env, YARN_ENABLE_IMMUTABLE_INSTALLS: "false" } : plan.env;
+
+  const install = run(plan.command, plan.args, dir, fixtureEnv);
   if (!install.ok) {
     console.error(`FAIL ${testCase.name}: ${plan.command} ${plan.args.join(" ")} failed\n${install.out.slice(-1500)}`);
     failures++;
