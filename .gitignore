@@ -399,3 +399,6 @@ FodyWeavers.xsd
 
 # ESLint
 .eslintcache
+
+# Transient tsc output used by scripts/smoke-package-managers.mjs
+.smoke-build/

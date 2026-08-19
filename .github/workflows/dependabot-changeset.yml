@@ -1,0 +1,92 @@
+name: Dependabot Changeset
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  generate-changeset:
+    name: Generate Changeset
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.CHANGESETS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.CHANGESETS_BOT_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Check for existing changeset
+        id: check-changeset
+        run: |
+          CHANGESET_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '.changeset/*.md' | grep -v README.md || true)
+          if [ -n "$CHANGESET_FILES" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Changeset already exists, skipping generation"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Runs unconditionally: dist/ has to be rebuilt whenever package.json changed, even on a
+      # re-push where the changeset from the previous run is already present.
+      - name: Detect package changes
+        id: detect-changes
+        run: |
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'package.json')
+          if [ -n "$CHANGED" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "package.json changed:"
+            echo "$CHANGED"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No package.json changes detected (lockfile-only or workflow update)"
+          fi
+
+      # Must precede setup-node so its pnpm cache can resolve the store.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Generate changeset
+        if: steps.check-changeset.outputs.exists == 'false'
+        run: node scripts/generate-dependabot-changeset.mjs
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          WORKSPACE_PACKAGES_CHANGED: ${{ steps.detect-changes.outputs.changed }}
+
+      # dist/index.js is a committed ncc bundle of the runtime dependencies, so a dependency bump
+      # changes it. Without this the CI drift check fails on every npm dependabot PR.
+      - name: Rebuild dist
+        if: steps.detect-changes.outputs.changed == 'true'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Commit and push changeset
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .changeset/ dist/
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore: add changeset for dependency updates"
+          git push

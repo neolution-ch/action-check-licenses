@@ -20,6 +20,18 @@ inputs:
     description: "The list of folders to ignore for the license check"
     required: false
     default: ""
+  packageManager:
+    description: "Package manager to use for npm projects: auto, npm, yarn or pnpm. 'auto' detects it per folder from the packageManager field and the lockfile."
+    required: false
+    default: "auto"
+  skipInstall:
+    description: "Scan the node_modules already present instead of installing. Use when the workflow installs dependencies itself (for example because a private registry needs credentials)."
+    required: false
+    default: "false"
+  ignoreScripts:
+    description: "Skip dependency lifecycle scripts during install. Faster and safer; license metadata does not depend on them."
+    required: false
+    default: "false"
 runs:
   using: "node20"
   main: "dist/index.js"

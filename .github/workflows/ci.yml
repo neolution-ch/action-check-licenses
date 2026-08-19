@@ -2,8 +2,12 @@ name: CI
 
 on:
   workflow_dispatch:
-  pull_request:
+  push:
     branches: [main]
+  pull_request:
+    branches:
+      - main
+      - "release/**"
     types: [opened, reopened, synchronize, ready_for_review]
 
 # cancel running actions for current PR if new commits were pushed
@@ -11,102 +15,96 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
-  depandabot-modify-changelog:
-    if: ${{ github.actor == 'dependabot[bot]' }}
-    permissions:
-      contents: write
+  changeset-check:
+    name: Changeset Check
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
 
-      - run: |
-          insertText="### dependabot: \\\#${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}"
+      # Must precede setup-node so its pnpm cache can resolve the store.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
-          # check if file doesn't contain the text already
-          if ! grep -q "$insertText" CHANGELOG.md; then
-            echo "Changelog entry not found, adding it"
-            sed -i "/## \[Unreleased\]/a \
-            $insertText" CHANGELOG.md
-          else
-            echo "Changelog entry already exists, skipping"
-            exit 0
-          fi
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
 
-      - name: initialize mandatory git config
-        run: |
-          git config user.name "GitHub Changelog Bot"
-          git config user.email changelog-bot@neolution.ch
+      - run: pnpm install --frozen-lockfile
 
-      - run: npx prettier --write CHANGELOG.md
-
-      - name: commit and push
-        run: |
-          git add CHANGELOG.md
-          git commit -m "Add changelog entry for ${{ github.event.pull_request.title }}"
-          git push
+      - name: Check for changesets
+        if: "!startsWith(github.head_ref, 'changeset-release/')"
+        run: pnpm exec changeset status --since=origin/${{ github.base_ref }}
 
   build:
-    if: github.event.pull_request.draft == false
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: "yarn"
-      - run: yarn install --frozen-lockfile
-      - run: yarn prettier-check
-      - run: yarn lint
-      - run: yarn build
+          node-version: 24
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run prettier-check
+      - run: pnpm run lint
+      - run: pnpm run typecheck
+      - run: pnpm run build
       - name: Check changed files
         run: |
-          git update-index -q --refresh
-          if ! git diff-index --quiet HEAD --; then
+          git add -A
+          if ! git diff --cached --quiet; then
             echo "Some files changed after build:"
             echo
-            git diff --stat
+            git diff --cached --stat
+            echo
+            # dist/index.js is a single-line-heavy bundle, so show a trimmed word diff:
+            # the stat alone never says WHAT differs.
+            git diff --cached -U0 --word-diff=plain -- . | head -c 6000
             echo
             echo "Please rebuild it locally and commit all the files"
             exit 1
           fi
 
-  check-changelog:
-    if: github.event.pull_request.draft == false
+  smoke-package-managers:
+    # test-action only covers the manager this repository itself uses (pnpm). Without this job a
+    # broken install plan for npm, yarn classic or yarn berry would ship unnoticed, and a wrong
+    # node_modules layout does not error -- it silently reports a handful of packages.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
-
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v40
-
-      - name: Check if changelog was touched
-        run: |
-          changelogFound=$(echo ${{ steps.changed-files.outputs.all_changed_files }} | grep -ow "CHANGELOG.md" | wc -w)
-          if [ $changelogFound -eq 0 ]; then
-            echo '### :boom: Please update the changelog accordingly (https://keepachangelog.com)' >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
+          node-version: 24
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run smoke
 
   test-action:
-    if: github.event.pull_request.draft == false
+    # The action only does anything on a pull_request event, so running it elsewhere proves nothing.
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      #- uses: cardinalby/git-get-release-action@v1
-      #  id: get_release
-      #  env:
-      #    GITHUB_TOKEN: ${{ github.token }}
-      #  with:
-      #    latest: true
-
+      # Deliberately no pnpm setup step: this repository is a pnpm project, so this mirrors a
+      # consuming repo that never sets pnpm up, and exercises the corepack fallback for real.
       - name: Use the license check action on this
         uses: ./
         with:

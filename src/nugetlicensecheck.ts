@@ -1,9 +1,8 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as fs from "fs";
+import { ActionConfig } from "./config";
 
-const blockedLicenses = core.getMultilineInput("blockedLicenses");
-const continueOnBlockedFound = core.getBooleanInput("continueOnBlockedFound");
 let toolInstalled: boolean = false;
 
 interface Package {
@@ -22,7 +21,11 @@ interface Package {
   };
 }
 
-const processNuget = async (csprojFolders: string[]): Promise<string> => {
+const processNuget = async (csprojFolders: string[], config: ActionConfig): Promise<string> => {
+  if (csprojFolders.length === 0) {
+    return "";
+  }
+
   if (!toolInstalled) {
     await exec.exec("dotnet", ["tool", "install", "--global", "dotnet-project-licenses"], {
       silent: true,
@@ -56,7 +59,7 @@ const processNuget = async (csprojFolders: string[]): Promise<string> => {
 
     // use set to get distinct
     const blockedLicenseNames = [
-      ...new Set(licenses.filter((license) => blockedLicenses.includes(license.LicenseType)).map((license) => license.LicenseType)),
+      ...new Set(licenses.filter((license) => config.blockedLicenses.includes(license.LicenseType)).map((license) => license.LicenseType)),
     ].join(", ");
 
     if (blockedLicenseNames) {
@@ -74,7 +77,7 @@ const processNuget = async (csprojFolders: string[]): Promise<string> => {
 
     core.info(`Finished processNuget for: ${projectPath}`);
 
-    if (!continueOnBlockedFound && blockedLicenseNames) {
+    if (!config.continueOnBlockedFound && blockedLicenseNames) {
       core.info("Detected not allowed licenses (continueOnBlockedFound = false)");
       throw new Error("Detected not allowed licenses (continueOnBlockedFound = false)");
     }
