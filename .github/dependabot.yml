@@ -1,5 +1,22 @@
+# The Dependabot Changeset workflow auto-generates a changeset for every PR opened here,
+# so these updates flow through the normal release process.
 version: 2
 updates:
+  # dist/index.js is committed and shipped, so every npm dependency here is shipped code.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      actions-toolkit:
+        patterns:
+          - "@actions/*"
+      npm-non-major:
+        update-types:
+          - "minor"
+          - "patch"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

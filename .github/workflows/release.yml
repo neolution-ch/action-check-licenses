@@ -1,0 +1,143 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+      - "release/**"
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.CHANGESETS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.CHANGESETS_BOT_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      # Must precede setup-node so its pnpm cache can resolve the store.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Determine publish config
+        id: publish-config
+        run: |
+          if [[ "${{ github.ref }}" == refs/heads/release/* ]]; then
+            # Extract major version from branch name (e.g., release/v1.x → release-v1)
+            BRANCH="${{ github.ref_name }}"
+            TAG=$(echo "$BRANCH" | sed -n 's|release/v\([0-9]*\)\..*|release-v\1|p')
+            echo "tag=--tag $TAG" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v2
+        with:
+          # The App token must be passed through this input: the action reads only
+          # the input, and the resulting version PR and release commit are attributed
+          # to the App so that they re-trigger CI.
+          github-token: ${{ steps.app-token.outputs.token }}
+          publish-script: pnpm exec changeset publish ${{ steps.publish-config.outputs.tag }}
+          pr-title: "chore: version packages"
+          commit-message: "chore: version packages"
+
+      - name: Move the major version tag
+        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # Consumers reference this action as @v0, so the major tag has to follow every
+          # release or nothing that changesets publishes ever reaches them.
+          version=$(node -p "require('./package.json').version")
+          case "$version" in
+            *-*) echo "Prerelease $version, leaving the major tag alone"; exit 0 ;;
+          esac
+          major="v${version%%.*}"
+          git tag -f "$major"
+          git push --force origin "refs/tags/$major"
+          echo "Moved $major to $(git rev-parse HEAD)"
+
+      - name: Create release branch on major version bump
+        if: steps.changesets.outputs.published == 'true' && github.ref ==
+          'refs/heads/main'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const published = JSON.parse('${{ steps.changesets.outputs.published-packages }}');
+            if (!published.length) return;
+
+            const newVersion = published[0].version;
+            const newMajor = parseInt(newVersion.split('.')[0], 10);
+
+            // Only act on stable major bumps (not prereleases)
+            if (newVersion.includes('-') || newMajor < 1) return;
+
+            const prevMajor = newMajor - 1;
+            const branchName = `release/v${prevMajor}.x`;
+
+            // Check if the branch already exists
+            try {
+                await github.rest.repos.getBranch({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    branch: branchName,
+                });
+                console.log(`Branch ${branchName} already exists, skipping.`);
+                return;
+            } catch (e) {
+                if (e.status !== 404) throw e;
+            }
+
+            // Find the last tag for the previous major version
+            const tags = await github.paginate(github.rest.repos.listTags, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100,
+            });
+
+            const prevTag = tags.find(t => {
+                const match = t.name.match(/(?:^v?|@)(\d+)\.\d+\.\d+$/);
+                return match && parseInt(match[1], 10) === prevMajor;
+            });
+
+            if (!prevTag) {
+                console.log(`No tag found for v${prevMajor}, skipping branch creation.`);
+                return;
+            }
+
+            // Create the branch from the previous major's last tag
+            await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `refs/heads/${branchName}`,
+                sha: prevTag.commit.sha,
+            });
+
+            console.log(`Created ${branchName} from tag ${prevTag.name} (${prevTag.commit.sha}).`);
