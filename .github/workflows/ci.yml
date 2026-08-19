@@ -68,6 +68,10 @@ jobs:
             echo
             git diff --cached --stat
             echo
+            # dist/index.js is a single-line-heavy bundle, so show a trimmed word diff:
+            # the stat alone never says WHAT differs.
+            git diff --cached -U0 --word-diff=plain -- . | head -c 6000
+            echo
             echo "Please rebuild it locally and commit all the files"
             exit 1
           fi
